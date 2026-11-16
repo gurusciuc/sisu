@@ -1,0 +1,11 @@
+{
+    "addressAlias":  true,
+    "menuCommand":  true,
+    "uniqueTab":  true,
+    "placement":  "left",
+    "search":  "Google",
+    "restart":  true,
+    "importViaPicker":  true,
+    "privateIsolation":  true,
+    "closeRestoredOriginalTab":  true
+}

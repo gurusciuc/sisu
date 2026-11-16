@@ -1,0 +1,10 @@
+{
+  "controlT": true,
+  "controlW": true,
+  "cycles": 6,
+  "layouts": [
+    "top",
+    "left"
+  ],
+  "anchorPreserved": true
+}

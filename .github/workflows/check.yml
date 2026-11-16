@@ -23,6 +23,9 @@ jobs:
           node tools/capabilities.mjs dist/preview/desktop_browser.exe dist/results/capabilities.json
           if ($LASTEXITCODE) {exit $LASTEXITCODE}
           ./tools/settings-check.ps1 -Exe "$PWD/dist/preview/desktop_browser.exe" -Out "$PWD/dist/results"
+          ./tools/frame-check.ps1 -Exe "$PWD/dist/preview/desktop_browser.exe" -Out "$PWD/dist/results"
+          node tools/address-check.mjs dist/preview/desktop_browser.exe dist/results
+          if ($LASTEXITCODE) {exit $LASTEXITCODE}
           node tools/transition.mjs dist/preview/desktop_browser.exe dist/results/new-tab-transition.json
           if ($LASTEXITCODE) {exit $LASTEXITCODE}
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02

@@ -22,6 +22,7 @@ The script validates the pinned official x64 CEF archive, builds the locked rele
 | Settings | Browser menu → Settings, Ctrl+, or type `#settings` / `browser://settings` in the address bar. Opening Settings again selects an existing Settings tab. Choices take effect immediately. |
 | Open or close a tab | +, Ctrl+T, the selected tab’s ×, or Ctrl+W. Ctrl+Tab cycles through the model. |
 | Navigate | Ctrl+L, type an address or search, then Enter. Bare domains use HTTPS. Use Alt+Left / Alt+Right for history and Ctrl+R to reload. |
+| Address suggestions | Matches recent URLs and bookmark titles/URLs locally. Use Up/Down and Enter to select, or Escape to dismiss. Provider search begins on commit. |
 | Move the tab strip | Use the placement icon or Settings → Appearance. Drag the sidebar edge or apply a width in Settings. The overflow menu lists tabs that do not fit. |
 | Import bookmarks | Export bookmarks as HTML from Brave, Chrome or Firefox. Choose Settings → Import bookmarks and select that file. Folders are preserved and duplicate URLs are skipped. Bookmarks in the browser menu opens the library. |
 | Save or find a page | Ctrl+D saves a web bookmark. Ctrl+F opens Find. F3 finds the next match. |
@@ -39,6 +40,9 @@ node tools/smoke.mjs exe=dist/preview/desktop_browser.exe out=dist/results ubol=
 ./tools/settings-check.ps1 -Exe "$PWD/dist/preview/desktop_browser.exe" -Out "$PWD/dist/results"
 node tools/capabilities.mjs dist/preview/desktop_browser.exe dist/results/capabilities.json
 node tools/transition.mjs dist/preview/desktop_browser.exe dist/results/new-tab-transition.json
+node tools/address-check.mjs dist/preview/desktop_browser.exe dist/results
+node tools/keyboard-check.mjs dist/preview/desktop_browser.exe dist/results
+./tools/frame-check.ps1 -Exe "$PWD/dist/preview/desktop_browser.exe" -Out "$PWD/dist/results"
 node tools/benchmark.mjs dist/preview/desktop_browser.exe dist/results
 ```
 

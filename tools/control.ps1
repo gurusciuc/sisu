@@ -1,7 +1,8 @@
 param([Parameter(Mandatory)][int]$BrowserPid,
-    [ValidateSet('navigate','button','close','geometry','address')][string]$Action,
+    [ValidateSet('navigate','button','close','geometry','address','type','suggestions','addressKey')][string]$Action,
     [string]$Value)
 $ErrorActionPreference='Stop'
+[Console]::OutputEncoding=[Text.UTF8Encoding]::new($false)
 Add-Type @'
 using System;
 using System.Text;
@@ -31,7 +32,27 @@ $class=[Text.StringBuilder]::new(128)
 $null=[BrowserControl]::GetClassName($h,$class,128)
 if($Action -eq 'close'){ $null=[BrowserControl]::PostMessage($h,16,[IntPtr]::Zero,[IntPtr]::Zero);return }
 if ($class.ToString() -ne 'DesktopBrowserFrame') {throw 'Expected the custom shell'}
-if($Action -eq 'address'){
+if($Action -eq 'type'){
+    if($Value.Length -gt 8192){throw 'Input is too long'}
+    $null=[BrowserControl]::PostMessage($h,273,[IntPtr]14,[IntPtr]::Zero)
+    Start-Sleep -Milliseconds 100
+    $edit=[BrowserControl]::FindWindowEx($h,[IntPtr]::Zero,'Edit',$null)
+    $null=[BrowserControl]::SendMessage($edit,12,[IntPtr]::Zero,$Value)
+}elseif($Action -eq 'suggestions'){
+    $list=[BrowserControl]::FindWindowEx($h,[IntPtr]::Zero,'ListBox','Address suggestions')
+    if($list -eq [IntPtr]::Zero){throw 'Address suggestions control absent'}
+    $n=[BrowserControl]::Send($list,395,[IntPtr]::Zero,[IntPtr]::Zero).ToInt32()
+    $rows=@(for($i=0;$i -lt $n;$i++){
+        $buf=[Text.StringBuilder]::new(8192)
+        $null=[BrowserControl]::Read($list,393,[IntPtr]$i,$buf)
+        $buf.ToString()
+    })
+    ConvertTo-Json -InputObject $rows -Compress
+}elseif($Action -eq 'addressKey'){
+    $key=switch($Value){'down'{40};'up'{38};'enter'{13};'escape'{27};default{throw 'Expected an address key'}}
+    $edit=[BrowserControl]::FindWindowEx($h,[IntPtr]::Zero,'Edit',$null)
+    $null=[BrowserControl]::Send($edit,256,[IntPtr]$key,[IntPtr]::Zero)
+}elseif($Action -eq 'address'){
     $edit=[BrowserControl]::FindWindowEx($h,[IntPtr]::Zero,'Edit',$null)
     $buf=[Text.StringBuilder]::new(8192)
     $null=[BrowserControl]::Read($edit,13,[IntPtr]8192,$buf)

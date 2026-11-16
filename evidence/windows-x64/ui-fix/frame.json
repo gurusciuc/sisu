@@ -1,0 +1,9 @@
+{
+    "title":  "Sisu",
+    "explicitFontAssigned":  true,
+    "captionAligned":  true,
+    "dragHitTest":  true,
+    "maximize":  true,
+    "restore":  true,
+    "minimize":  true
+}

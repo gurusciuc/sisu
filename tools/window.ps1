@@ -7,6 +7,14 @@ using System.Runtime.InteropServices;
 public static class TestWindow {
  [DllImport("user32.dll")] public static extern bool SetForegroundWindow(IntPtr handle);
  [DllImport("user32.dll")] public static extern IntPtr GetForegroundWindow();
+ [DllImport("kernel32.dll")] static extern uint GetCurrentThreadId();
+ [DllImport("user32.dll")] static extern uint GetWindowThreadProcessId(IntPtr h,IntPtr pid);
+ [DllImport("user32.dll")] static extern bool AttachThreadInput(uint from,uint to,bool attach);
+ public static bool FocusOwned(IntPtr h){
+   uint current=GetCurrentThreadId(),foreground=GetWindowThreadProcessId(GetForegroundWindow(),IntPtr.Zero);
+   bool attached=current!=foreground && AttachThreadInput(current,foreground,true);
+   try{return SetForegroundWindow(h);}finally{if(attached)AttachThreadInput(current,foreground,false);}
+ }
  [DllImport("user32.dll")] public static extern bool PrintWindow(IntPtr handle, IntPtr dc, uint flags);
  [DllImport("user32.dll")] public static extern bool GetWindowRect(IntPtr handle, out RECT rect);
  [DllImport("user32.dll")] public static extern bool GetCursorPos(out POINT point);
@@ -28,6 +36,7 @@ function Focus-Browser {
     $null=[TestWindow]::SetForegroundWindow($hw)
     Start-Sleep -Milliseconds 150
     if ([TestWindow]::GetForegroundWindow() -ne $hw) { (New-Object -ComObject WScript.Shell).AppActivate($BrowserPid) | Out-Null; Start-Sleep -Milliseconds 200 }
+    if ([TestWindow]::GetForegroundWindow() -ne $hw) { $null=[TestWindow]::FocusOwned($hw);Start-Sleep -Milliseconds 100 }
     if ([TestWindow]::GetForegroundWindow() -ne $hw) { throw 'Could not focus the fixture window' }
 }
 function Find-Item($name) {

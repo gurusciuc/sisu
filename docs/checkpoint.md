@@ -1,5 +1,11 @@
 # Windows feasibility checkpoint · 16 November 2026
 
+## Follow-up after local testing
+
+The revised local Windows build uses Arial and geometric icons, an integrated draggable tab/caption row, and local address suggestions. Repeated Ctrl+T/Ctrl+W cycles passed in top and left layouts while preserving the anchor document and draft. Caption alignment, dragging hit tests, minimize/maximize/restore, local suggestion selection, recent-URL persistence and private separation have targeted tests. View positioning now skips unchanged geometry, closing selects a survivor before removing the old parent, and chrome painting uses temporary double buffers. Create-and-close window-surface samples contained zero near-solid black/white frames. Hardware presentation remains a separate observation. [Follow-up evidence](../evidence/windows-x64/ui-fix/build.json)
+
+The user observed little memory advantage over Chrome with substantially fewer features. There is no verified matched-workload advantage for the current foundation, and Firefox has no established memory advantage in this project. Extension/window topology and equal-functionality comparisons remain architecture gates. [Foundation reassessment](foundation-reassessment.md)
+
 ## Delivered
 
 The runnable x64 preview opens a shared-profile CEF Chrome runtime under a native shell. Browser controls use a restrained dark palette, Helvetica/Arial-family typography and Windows glyphs. Settings opens in a normal tab from the menu, Ctrl+, `#settings` or `browser://settings`. It includes tab placement and width, search provider, startup behavior, bookmark import and a link to engine site permissions. Private preference changes remain in memory.

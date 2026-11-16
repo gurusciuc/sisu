@@ -13,7 +13,7 @@ fn limited(path: &std::path::Path) -> Result<Vec<u8>, String> {
     }
     Ok(data)
 }
-fn library(s: &Session) -> Result<Vec<Bookmark>, String> {
+pub(super) fn library(s: &Session) -> Result<Vec<Bookmark>, String> {
     let path = s.home.join(DB);
     if !path.try_exists().map_err(|e| e.to_string())? {
         return Ok(vec![]);

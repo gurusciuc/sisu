@@ -25,6 +25,7 @@ public class TabTransition {
     using(var bitmap=new Bitmap(r.right-r.left,r.bottom-r.top))using(var g=Graphics.FromImage(bitmap)){
       for(int i=0;i<65;i++){
         if(i==3)PostMessage(plus,245,IntPtr.Zero,IntPtr.Zero);
+        if(i==35)PostMessage(FindWindowEx(h,IntPtr.Zero,"Button","Close active tab"),245,IntPtr.Zero,IntPtr.Zero);
         var sample=new Sample{ms=watch.Elapsed.TotalMilliseconds};
         var dc=g.GetHdc();bool ok;try{ok=PrintWindow(h,dc,2);}finally{g.ReleaseHdc(dc);}
         if(!ok)throw new Exception("PrintWindow failed");
@@ -46,7 +47,7 @@ public class TabTransition {
 $app=Get-Process -Id $BrowserPid
 if($app.ProcessName -ne 'desktop_browser'){throw 'Expected fixture browser'}
 $rows=@([TabTransition]::Measure($app.MainWindowHandle))
-$result=[ordered]@{method='PrintWindow(PW_RENDERFULLCONTENT), 54 viewport points per sample';clickBeforeSample=3;samples=$rows;allBlack=@($rows|Where-Object black -ge 51).Count;allWhite=@($rows|Where-Object white -ge 51).Count}
+$result=[ordered]@{method='PrintWindow(PW_RENDERFULLCONTENT), 54 viewport points per sample';createBeforeSample=3;closeBeforeSample=35;samples=$rows;allBlack=@($rows|Where-Object black -ge 51).Count;allWhite=@($rows|Where-Object white -ge 51).Count}
 $result|ConvertTo-Json -Depth 4|Set-Content $OutputFile
-if($rows[0].oldPage -lt 20 -or $rows[-1].newPage -lt 20){throw 'Outgoing and incoming documents were not captured'}
+if($rows[0].oldPage -lt 20 -or $rows[-1].oldPage -lt 20 -or @($rows|Where-Object newPage -ge 20).Count -eq 0){throw 'Create and close endpoints were not captured'}
 if($result.allBlack -or $result.allWhite){throw 'A near-solid black or white surface was captured'}

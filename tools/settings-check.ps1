@@ -102,7 +102,7 @@ try {
     $null=[SettingsTest]::PostMessage([SettingsTest]::GetDlgItem($picker,1),245,[IntPtr]::Zero,[IntPtr]::Zero)
     WaitFor {[SettingsTest]::OwnedDialog($app.Id,'Bookmark import') -ne [IntPtr]::Zero} 'import result'
     $resultDialog=[SettingsTest]::OwnedDialog($app.Id,'Bookmark import')
-    $null=[SettingsTest]::PostMessage([SettingsTest]::GetDlgItem($resultDialog,1),245,[IntPtr]::Zero,[IntPtr]::Zero)
+    $null=[SettingsTest]::PostMessage($resultDialog,16,[IntPtr]::Zero,[IntPtr]::Zero)
     WaitFor {[SettingsTest]::IsWindowEnabled($hw) -and [SettingsTest]::OwnedDialog($app.Id,'Bookmark import') -eq [IntPtr]::Zero} 'return from bookmark import'
     $book=Get-Content "$env:BROWSER_TEST_HOME/browser-test/everyday/bookmarks.json" -Raw|ConvertFrom-Json
     if($book[0].url -ne 'https://example.org/article' -or $book[0].folders[0] -ne 'Reading'){throw 'Imported bookmark did not match export'}

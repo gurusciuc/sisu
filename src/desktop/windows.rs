@@ -21,11 +21,12 @@ unsafe extern "C" {
     fn shell_sync_settings(id: i32, visible: bool, prefs: NativePrefs);
     fn shell_focus_settings(id: i32);
     fn shell_width(width: i32);
+    fn shell_suggestions(query: *const u16, rows: *const *const u16, count: i32);
     fn shell_library(rows: *const *const u16, count: i32, selected: *mut i32) -> i32;
     fn shell_find(buffer: *mut u16) -> i32;
     fn shell_pick_file(buffer: *mut u16, size: i32) -> bool;
     fn shell_notice(title: *const u16, message: *const u16);
-    fn shell_prepare_page() -> *mut c_void;
+    fn shell_prepare_page(width: *mut i32, height: *mut i32) -> *mut c_void;
     fn shell_discard_stage(stage: *mut c_void);
 }
 
@@ -48,6 +49,8 @@ struct Window {
     last: String,
     find: String,
     settings_tabs: HashSet<i32>,
+    recent: Vec<String>,
+    bookmarks: Vec<crate::bookmarks::Bookmark>,
     order: Vec<i32>,
     current: Option<i32>,
     vertical: bool,
@@ -141,7 +144,7 @@ pub fn open(state: Arc<Session>, context: RequestContext) -> bool {
     let prefs = if !state.private {
         std::fs::read(&pref)
             .ok()
-            .filter(|b| b.len() <= 16384)
+            .filter(|b| b.len() <= 512 * 1024)
             .and_then(|buf| serde_json::from_slice::<serde_json::Value>(&buf).ok())
     } else {
         None
@@ -176,6 +179,23 @@ pub fn open(state: Arc<Session>, context: RequestContext) -> bool {
     } else {
         state.initial.clone()
     };
+    let recent = prefs
+        .as_ref()
+        .and_then(|v| v["recent"].as_array())
+        .map(|rows| {
+            rows.iter()
+                .take(64)
+                .filter_map(|r| r.as_str())
+                .filter(|u| u.len() <= 2048 && web_host(u).is_some())
+                .map(str::to_owned)
+                .collect()
+        })
+        .unwrap_or_default();
+    let bookmarks = if state.private {
+        vec![]
+    } else {
+        library::library(&state).unwrap_or_default()
+    };
     WINDOW.with_borrow_mut(|slot| {
         *slot = Some(Window {
             session: state,
@@ -185,6 +205,8 @@ pub fn open(state: Arc<Session>, context: RequestContext) -> bool {
             last,
             find: String::new(),
             settings_tabs: HashSet::new(),
+            recent,
+            bookmarks,
             order: Vec::new(),
             current: None,
             vertical,
@@ -202,7 +224,8 @@ fn new_page(url: &str) -> bool {
     let Some((mut ctx, state, google)) = setup else {
         return false;
     };
-    let stage = unsafe { shell_prepare_page() };
+    let (mut width, mut height) = (0, 0);
+    let stage = unsafe { shell_prepare_page(&mut width, &mut height) };
     if stage.is_null() {
         return false;
     }
@@ -216,8 +239,8 @@ fn new_page(url: &str) -> bool {
         &Rect {
             x: 0,
             y: 0,
-            width: 800,
-            height: 600,
+            width,
+            height,
         },
     );
     let target = if url == "about:blank" {
@@ -283,7 +306,12 @@ pub fn refresh(b: &Browser) {
             if let Some(w) = slot
                 && !w.session.private
             {
-                w.last = ordinary.url;
+                w.last = ordinary.url.clone();
+                if ordinary.url.len() <= 2048 {
+                    w.recent.retain(|u| u != &ordinary.url);
+                    w.recent.insert(0, ordinary.url);
+                    w.recent.truncate(64);
+                }
             }
         });
     }
@@ -342,11 +370,13 @@ pub fn removed(id: i32) {
         ))
     });
     if let Some((was_current, next)) = change {
+        // Present the surviving view before retiring the closing parent.
+        if was_current && let Some(next) = next {
+            select(next);
+        }
         unsafe { shell_remove(id) };
         if next.is_none() {
             WINDOW.with_borrow_mut(|w| *w = None);
-        } else if was_current && let Some(next) = next {
-            select(next);
         }
     }
 }
@@ -355,7 +385,7 @@ fn save(w: &Window) {
         return;
     }
     if let Ok(mut tmp) = tempfile::NamedTempFile::new_in(&w.session.home) {
-        let prefs = serde_json::json!({"placement":if w.vertical{"left"}else{"top"},"width":w.width,"google":w.google,"reopen":w.reopen,"last":if w.reopen {w.last.as_str()}else{""}});
+        let prefs = serde_json::json!({"placement":if w.vertical{"left"}else{"top"},"width":w.width,"google":w.google,"reopen":w.reopen,"recent":w.recent,"last":if w.reopen {w.last.as_str()}else{""}});
         if write!(tmp, "{prefs}").is_ok() && tmp.as_file().sync_all().is_ok() {
             let _ = tmp.persist(w.session.home.join("layout.json"));
         }
@@ -408,14 +438,55 @@ unsafe extern "C" fn browser_action(command: i32, tab: i32, text: *const u16) {
     let browser = id.and_then(|id| BROWSERS.with_borrow(|bs| bs.get(&id).cloned()));
     if command == 10 || (command == 5 && order.len() == 1) {
         WINDOW.with_borrow(|w| {
-            if let Some(w) = w
-                && w.reopen
-            {
+            if let Some(w) = w {
                 save(w);
             }
         });
     }
     match command {
+        41 => {
+            if text.is_null() {
+                return;
+            }
+            let mut n = 0;
+            while n < 8192 && unsafe { *text.add(n) } != 0 {
+                n += 1;
+            }
+            let query = String::from_utf16_lossy(unsafe { std::slice::from_raw_parts(text, n) });
+            let lower = query.trim().to_lowercase();
+            let matches = WINDOW.with_borrow(|slot| {
+                let Some(w) = slot.as_ref() else {
+                    return vec![];
+                };
+                let mut rows = vec![];
+                if !lower.is_empty() {
+                    for b in &w.bookmarks {
+                        if b.title.to_lowercase().contains(&lower)
+                            || b.url.to_lowercase().contains(&lower)
+                        {
+                            rows.push(b.url.clone());
+                            if rows.len() == 5 {
+                                break;
+                            }
+                        }
+                    }
+                    for url in &w.recent {
+                        if url.to_lowercase().contains(&lower) && !rows.contains(url) {
+                            rows.push(url.clone());
+                            if rows.len() >= 7 {
+                                break;
+                            }
+                        }
+                    }
+                }
+                rows
+            });
+            let values: Vec<_> = matches.iter().map(|s| wide(s)).collect();
+            let ptrs: Vec<_> = values.iter().map(|s| s.as_ptr()).collect();
+            unsafe {
+                shell_suggestions(wide(&query).as_ptr(), ptrs.as_ptr(), ptrs.len() as i32);
+            }
+        }
         18 => open_settings(),
         30..=37 => {
             let trusted = browser
@@ -463,6 +534,13 @@ unsafe extern "C" fn browser_action(command: i32, tab: i32, text: *const u16) {
         20..=22 => {
             if let Err(e) = library::action(command, &state, browser.as_ref()) {
                 notice("Bookmarks", &e);
+            }
+            if let Ok(records) = library::library(&state) {
+                WINDOW.with_borrow_mut(|slot| {
+                    if let Some(w) = slot {
+                        w.bookmarks = records;
+                    }
+                });
             }
         }
         23 | 24 => {

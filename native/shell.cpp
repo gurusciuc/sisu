@@ -4,6 +4,8 @@
 #define _UNICODE
 #define NOMINMAX
 #include <windows.h>
+#include <gdiplus.h>
+#pragma comment(lib, "gdiplus.lib")
 
 #include <commctrl.h>
 #include <commdlg.h>
@@ -57,7 +59,10 @@ enum Command {
   ZoomIn,
   ZoomOut,
   ZoomReset,
-  FindNext
+  FindNext,
+  CaptionMinimize,
+  CaptionMaximize,
+  CaptionCloseWindow
 };
 namespace {
 const COLORREF ink = RGB(241, 242, 243), muted = RGB(167, 170, 176),
@@ -72,9 +77,12 @@ struct Tab {
   bool settingsVisible = false;
 };
 std::vector<Tab> tabs;
-HWND window, edit, viewport, buttons[18]{};
-HWND retiringPages;
-HFONT font, labelFont, symbolFont, smallSymbol;
+HWND window, edit, viewport, buttons[41]{};
+HWND retiringPages, addressSuggestions;
+bool settingAddress = false;
+std::vector<std::wstring> suggestionValues;
+HFONT font, labelFont;
+ULONG_PTR drawingToken;
 HWND hovered = nullptr;
 bool keyboardFocus = false;
 int presented = -1;
@@ -100,57 +108,163 @@ void rounded(HDC dc, RECT box, COLORREF fill, COLORREF border, int radius) {
   SelectObject(dc, old);
   DeleteObject(pen);
 }
-wchar_t glyph(int id) {
+void icon(HDC dc, int id, int x, int y, COLORREF c) {
+  using namespace Gdiplus;
+  Graphics g(dc);
+  g.SetSmoothingMode(SmoothingModeAntiAlias);
+  float scale = px(id == CloseTab ? 12 : 18) / 24.0f;
+  g.TranslateTransform(float(x) - 12 * scale, float(y) - 12 * scale);
+  g.ScaleTransform(scale, scale);
+  Color color(255, GetRValue(c), GetGValue(c), GetBValue(c));
+  Pen pen(color, 1.8f);
+  pen.SetStartCap(LineCapRound);
+  pen.SetEndCap(LineCapRound);
+  pen.SetLineJoin(LineJoinRound);
+  SolidBrush brush(color);
+  auto line = [&](float x1, float y1, float x2, float y2) {
+    g.DrawLine(&pen, x1, y1, x2, y2);
+  };
+  auto path = [&](std::initializer_list<PointF> points) {
+    std::vector<PointF> p(points);
+    g.DrawLines(&pen, p.data(), (INT)p.size());
+  };
   switch (id) {
   case Back:
-    return 0xe72b;
+    path({{14, 5}, {7, 12}, {14, 19}});
+    line(7, 12, 21, 12);
+    break;
   case Forward:
-    return 0xe72a;
+    path({{10, 5}, {17, 12}, {10, 19}});
+    line(3, 12, 17, 12);
+    break;
   case Reload:
-    return loading ? 0xe711 : 0xe72c;
+    if (loading) {
+      line(6, 6, 18, 18);
+      line(18, 6, 6, 18);
+    } else {
+      g.DrawArc(&pen, 4.f, 4.f, 16.f, 16.f, 35.f, 285.f);
+      path({{19, 3}, {19, 9}, {13, 9}});
+    }
+    break;
   case NewTab:
-    return 0xe710;
+    line(12, 4, 12, 20);
+    line(4, 12, 20, 12);
+    break;
   case CloseTab:
-    return 0xe711;
+  case CaptionCloseWindow:
+    line(6, 6, 18, 18);
+    line(18, 6, 6, 18);
+    break;
+  case CaptionMinimize:
+    line(5, 13, 19, 13);
+    break;
+  case CaptionMaximize:
+    if (IsZoomed(window)) {
+      g.DrawRectangle(&pen, 8.f, 4.f, 12.f, 12.f);
+      g.DrawRectangle(&pen, 4.f, 8.f, 12.f, 12.f);
+    } else
+      g.DrawRectangle(&pen, 5.f, 5.f, 14.f, 14.f);
+    break;
   case Placement:
-    return 0xe90c;
+    g.DrawRectangle(&pen, 3.f, 4.f, 18.f, 16.f);
+    line(9, 4, 9, 20);
+    break;
   case AllTabs:
-    return 0xe70d;
+    path({{5, 9}, {12, 16}, {19, 9}});
+    break;
   case More:
-    return 0xe712;
+    for (int dot = 5; dot <= 19; dot += 7)
+      g.FillEllipse(&brush, float(dot) - 1.2f, 10.8f, 2.4f, 2.4f);
+    break;
   case Protection:
-    return 0xe83d;
-  case Settings:
-    return 0xe713;
+    path({{12, 3},
+          {20, 6},
+          {19, 13},
+          {16, 18},
+          {12, 21},
+          {8, 18},
+          {5, 13},
+          {4, 6},
+          {12, 3}});
+    path({{8, 11}, {11, 14}, {16, 9}});
+    break;
   case PrivateWindow:
-    return 0xe72e;
+    g.DrawArc(&pen, 7.f, 3.f, 10.f, 14.f, 180.f, 180.f);
+    g.DrawRectangle(&pen, 5.f, 10.f, 14.f, 11.f);
+    line(12, 14, 12, 17);
+    break;
   case Bookmarks:
   case AddBookmark:
-    return 0xe734;
+    path({{6, 3}, {18, 3}, {18, 21}, {12, 17}, {6, 21}, {6, 3}});
+    break;
   case Import:
-    return 0xe8b5;
-  case History:
-    return 0xe81c;
   case Downloads:
-    return 0xe896;
+    line(12, 3, 12, 15);
+    path({{7, 10}, {12, 15}, {17, 10}});
+    path({{4, 16}, {4, 21}, {20, 21}, {20, 16}});
+    break;
+  case History:
+    g.DrawArc(&pen, 4.f, 4.f, 16.f, 16.f, 215.f, 290.f);
+    path({{3, 4}, {3, 10}, {9, 10}});
+    path({{12, 7}, {12, 12}, {16, 14}});
+    break;
   case Find:
-    return 0xe721;
+    g.DrawEllipse(&pen, 3.f, 3.f, 12.f, 12.f);
+    line(14, 14, 21, 21);
+    break;
+  case Settings:
+    g.DrawEllipse(&pen, 5.f, 5.f, 14.f, 14.f);
+    g.DrawEllipse(&pen, 9.f, 9.f, 6.f, 6.f);
+    for (int i = 0; i < 8; i++) {
+      g.TranslateTransform(12, 12);
+      g.RotateTransform(45);
+      g.TranslateTransform(-12, -12);
+      line(12, 2, 12, 5);
+    }
+    break;
   case Manager:
-    return 0xea86;
+    path({{4, 9},
+          {9, 9},
+          {9, 4},
+          {15, 4},
+          {15, 9},
+          {20, 9},
+          {20, 20},
+          {4, 20},
+          {4, 9}});
+    break;
   default:
-    return 0xe7c3;
+    path({{6, 3}, {14, 3}, {19, 8}, {19, 21}, {6, 21}, {6, 3}});
+    path({{14, 3}, {14, 8}, {19, 8}});
+    break;
   }
 }
-void icon(HDC dc, int id, int x, int y, COLORREF c) {
-  auto old = SelectObject(dc, id == CloseTab ? smallSymbol : symbolFont);
-  const wchar_t ch = glyph(id);
-  RECT box{x - px(13), y - px(13), x + px(13), y + px(13)};
-  SetTextColor(dc, c);
-  SetBkMode(dc, TRANSPARENT);
-  DrawTextW(dc, &ch, 1, &box,
-            DT_CENTER | DT_VCENTER | DT_SINGLELINE | DT_NOPREFIX);
-  SelectObject(dc, old);
-}
+class PaintBuffer {
+  HDC target;
+  HBITMAP bitmap;
+  HGDIOBJ previous;
+  int width, height;
+  POINT origin;
+
+public:
+  HDC dc;
+  PaintBuffer(HDC target, RECT bounds)
+      : target(target), width(bounds.right - bounds.left),
+        height(bounds.bottom - bounds.top), origin{bounds.left, bounds.top} {
+    dc = CreateCompatibleDC(target);
+    bitmap =
+        CreateCompatibleBitmap(target, std::max(1, width), std::max(1, height));
+    previous = SelectObject(dc, bitmap);
+    SetViewportOrgEx(dc, -origin.x, -origin.y, nullptr);
+  }
+  ~PaintBuffer() {
+    BitBlt(target, origin.x, origin.y, width, height, dc, origin.x, origin.y,
+           SRCCOPY);
+    SelectObject(dc, previous);
+    DeleteObject(bitmap);
+    DeleteDC(dc);
+  }
+};
 void text(HDC dc, std::wstring const &str, RECT box, COLORREF c, HFONT f,
           UINT align = DT_LEFT) {
   SelectObject(dc, f);
@@ -159,76 +273,51 @@ void text(HDC dc, std::wstring const &str, RECT box, COLORREF c, HFONT f,
   DrawTextW(dc, str.c_str(), -1, &box,
             DT_SINGLELINE | DT_VCENTER | DT_END_ELLIPSIS | DT_NOPREFIX | align);
 }
-const wchar_t *fontFace() {
-  static const wchar_t *face = []() {
-    auto dc = GetDC(nullptr);
-    for (auto family : {L"Helvetica Neue", L"Helvetica", L"Arial"}) {
-      LOGFONTW lf{};
-      lf.lfCharSet = DEFAULT_CHARSET;
-      wcscpy_s(lf.lfFaceName, family);
-      bool exists = false;
-      EnumFontFamiliesExW(
-          dc, &lf,
-          [](const LOGFONTW *, const TEXTMETRICW *, DWORD, LPARAM data) -> int {
-            *reinterpret_cast<bool *>(data) = true;
-            return 0;
-          },
-          reinterpret_cast<LPARAM>(&exists), 0);
-      if (exists) {
-        ReleaseDC(nullptr, dc);
-        return family;
-      }
-    }
-    ReleaseDC(nullptr, dc);
-    return L"Arial";
-  }();
-  return face;
-}
+const wchar_t *fontFace() { return L"Arial"; }
 void setFonts() {
   auto make = [](int height, int weight) {
     return CreateFontW(-px(height), 0, 0, 0, weight, 0, 0, 0, DEFAULT_CHARSET,
                        0, 0, CLEARTYPE_QUALITY, 0, fontFace());
   };
-  auto next = make(15, FW_NORMAL), nextSmall = make(14, FW_NORMAL);
+  auto next = make(14, FW_NORMAL), nextSmall = make(14, FW_NORMAL);
   if (edit)
     SendMessageW(edit, WM_SETFONT, (WPARAM)next, 1);
   if (font)
     DeleteObject(font);
   if (labelFont)
     DeleteObject(labelFont);
-  if (symbolFont)
-    DeleteObject(symbolFont);
-  if (smallSymbol)
-    DeleteObject(smallSymbol);
-  auto symbols = [](int size) {
-    return CreateFontW(-px(size), 0, 0, 0, FW_NORMAL, 0, 0, 0, DEFAULT_CHARSET,
-                       0, 0, ANTIALIASED_QUALITY, 0, L"Segoe Fluent Icons");
-  };
-  symbolFont = symbols(16);
-  smallSymbol = symbols(11);
+
   font = next;
   labelFont = nextSmall;
 }
 void place(HWND w, int x, int y, int width, int height) {
-  SetWindowPos(w, nullptr, x, y, std::max(1, width), std::max(1, height),
-               SWP_NOZORDER | SWP_NOACTIVATE);
+  RECT actual{};
+  GetWindowRect(w, &actual);
+  MapWindowPoints(HWND_DESKTOP, GetParent(w), (POINT *)&actual, 2);
+  width = std::max(1, width);
+  height = std::max(1, height);
+  if (actual.left == x && actual.top == y &&
+      actual.right - actual.left == width &&
+      actual.bottom - actual.top == height)
+    return;
+  SetWindowPos(w, nullptr, x, y, width, height, SWP_NOZORDER | SWP_NOACTIVATE);
 }
-void sizeSettings(HWND panel);
+
 void layout() {
   if (!window || !edit)
     return;
   RECT r{};
   GetClientRect(window, &r);
-  const int top = left ? 0 : px(47), nav = px(52),
+  const int top = px(47), nav = px(52),
             side = left ? std::min(px(gutter), int(r.right) / 2) : 0;
   const int leftHeader = px(48);
   const int maxTabs =
       left ? std::max(1, (int(r.bottom) - leftHeader - px(98)) / px(37))
-           : std::max(1, (int(r.right) - px(145)) / px(112));
+           : std::max(1, (int(r.right) - px(277)) / px(112));
   scrollIndex =
       std::clamp(scrollIndex, 0, std::max(0, (int)tabs.size() - maxTabs));
   const int tabWidth =
-      std::min(px(204), (int(r.right) - px(145)) /
+      std::min(px(204), (int(r.right) - px(277)) /
                             std::max(1, std::min(maxTabs, (int)tabs.size())));
   int shown = 0;
   bool closeVisible = false;
@@ -254,12 +343,15 @@ void layout() {
     ShowWindow(tabs[i].button, show ? SW_SHOWNA : SW_HIDE);
   }
   ShowWindow(buttons[CloseTab], closeVisible ? SW_SHOWNA : SW_HIDE);
-  place(buttons[Placement], left ? px(8) : r.right - px(45), px(8), px(34),
+  place(buttons[Placement], left ? px(8) : r.right - px(179), px(8), px(34),
         px(32));
   int plusX = left ? px(9) : px(12) + shown * tabWidth;
   int plusY = left ? leftHeader + shown * px(37) : px(8);
   place(buttons[NewTab], plusX, plusY, px(32), px(32));
-  place(buttons[AllTabs], left ? side - px(45) : r.right - px(82), px(8),
+  for (int id = CaptionMinimize; id <= CaptionCloseWindow; id++)
+    place(buttons[id], r.right - px(138) + px((id - CaptionMinimize) * 46), 0,
+          px(46), px(47));
+  place(buttons[AllTabs], left ? side - px(45) : r.right - px(216), px(8),
         px(29), px(32));
   ShowWindow(buttons[AllTabs],
              (int)tabs.size() > maxTabs ? SW_SHOWNA : SW_HIDE);
@@ -293,6 +385,49 @@ void layout() {
       ShowWindow(t.page, SW_HIDE);
   InvalidateRect(window, nullptr, FALSE);
 }
+int shortcutCommand(WPARAM key) {
+  bool ctrl = (GetKeyState(VK_CONTROL) & 0x8000) != 0;
+  int command = 0;
+  if (ctrl) {
+    switch (key) {
+    case VK_OEM_COMMA:
+      command = Settings;
+      break;
+    case 'D':
+      command = AddBookmark;
+      break;
+    case 'F':
+      command = Find;
+      break;
+    case 'H':
+      command = History;
+      break;
+    case 'J':
+      command = Downloads;
+      break;
+    case 'N':
+      if (GetKeyState(VK_SHIFT) & 0x8000)
+        command = PrivateWindow;
+      break;
+    case 'L':
+      command = FocusAddress;
+      break;
+    case 'T':
+      command = NewTab;
+      break;
+    case 'W':
+      command = CloseTab;
+      break;
+    case 'R':
+      command = Reload;
+      break;
+    case VK_TAB:
+      command = Cycle;
+      break;
+    }
+  }
+  return command;
+}
 LRESULT CALLBACK controlProc(HWND h, UINT m, WPARAM w, LPARAM l, UINT_PTR,
                              DWORD_PTR) {
   if (m == WM_MOUSEMOVE && hovered != h) {
@@ -310,44 +445,21 @@ LRESULT CALLBACK controlProc(HWND h, UINT m, WPARAM w, LPARAM l, UINT_PTR,
   if (m == WM_KEYDOWN) {
     keyboardFocus = true;
     bool ctrl = (GetKeyState(VK_CONTROL) & 0x8000) != 0;
-    int command = 0;
-    if (ctrl) {
-      switch (w) {
-      case VK_OEM_COMMA:
-        command = Settings;
-        break;
-      case 'D':
-        command = AddBookmark;
-        break;
-      case 'F':
-        command = Find;
-        break;
-      case 'H':
-        command = History;
-        break;
-      case 'J':
-        command = Downloads;
-        break;
-      case 'N':
-        if (GetKeyState(VK_SHIFT) & 0x8000)
-          command = PrivateWindow;
-        break;
-      case 'L':
-        command = FocusAddress;
-        break;
-      case 'T':
-        command = NewTab;
-        break;
-      case 'W':
-        command = CloseTab;
-        break;
-      case 'R':
-        command = Reload;
-        break;
-      case VK_TAB:
-        command = Cycle;
-        break;
+    int command = shortcutCommand(w);
+    if (h == edit && (w == VK_ESCAPE || w == VK_UP || w == VK_DOWN) &&
+        IsWindowVisible(addressSuggestions)) {
+      if (w == VK_ESCAPE) {
+        ShowWindow(addressSuggestions, SW_HIDE);
+        return 0;
       }
+      int index = (int)SendMessageW(addressSuggestions, LB_GETCURSEL, 0, 0);
+      int count = (int)suggestionValues.size();
+      if (count) {
+        index =
+            w == VK_DOWN ? (index + 1) % count : (index + count - 1) % count;
+        SendMessageW(addressSuggestions, LB_SETCURSEL, index, 0);
+      }
+      return 0;
     }
     if (h == edit && w == VK_RETURN) {
       HIMC im = ImmGetContext(h);
@@ -358,6 +470,13 @@ LRESULT CALLBACK controlProc(HWND h, UINT m, WPARAM w, LPARAM l, UINT_PTR,
       if (!composing) {
         std::wstring s(GetWindowTextLengthW(h) + 1, 0);
         GetWindowTextW(h, s.data(), (int)s.size());
+        int selected =
+            IsWindowVisible(addressSuggestions)
+                ? (int)SendMessageW(addressSuggestions, LB_GETCURSEL, 0, 0)
+                : -1;
+        if (selected >= 0 && selected < (int)suggestionValues.size())
+          s = suggestionValues[selected];
+        ShowWindow(addressSuggestions, SW_HIDE);
         browser_action(Address, 0, s.c_str());
         return 0;
       }
@@ -377,8 +496,11 @@ LRESULT CALLBACK controlProc(HWND h, UINT m, WPARAM w, LPARAM l, UINT_PTR,
   }
   if (h == edit && m == WM_CHAR && w == VK_RETURN)
     return 0;
-  if (h == edit && (m == WM_SETFOCUS || m == WM_KILLFOCUS))
+  if (h == edit && (m == WM_SETFOCUS || m == WM_KILLFOCUS)) {
+    if (m == WM_KILLFOCUS)
+      ShowWindow(addressSuggestions, SW_HIDE);
     InvalidateRect(window, nullptr, FALSE);
+  }
   return DefSubclassProc(h, m, w, l);
 }
 HWND button(int id, const wchar_t *name) {
@@ -488,6 +610,47 @@ LRESULT CALLBACK proc(HWND h, UINT m, WPARAM w, LPARAM l) {
       return 0;
     }
     break;
+  case WM_KEYDOWN:
+    if (auto command = shortcutCommand(w)) {
+      PostMessageW(h, WM_COMMAND, command, 0);
+      return 0;
+    }
+    break;
+  case WM_NCCALCSIZE:
+    if (w) {
+      if (IsZoomed(h)) {
+        auto r = &((NCCALCSIZE_PARAMS *)l)->rgrc[0];
+        int frame =
+            GetSystemMetricsForDpi(SM_CXSIZEFRAME, GetDpiForWindow(h)) +
+            GetSystemMetricsForDpi(SM_CXPADDEDBORDER, GetDpiForWindow(h));
+        InflateRect(r, -frame, -frame);
+      }
+      return 0;
+    }
+    break;
+  case WM_NCHITTEST: {
+    POINT p{GET_X_LPARAM(l), GET_Y_LPARAM(l)};
+    ScreenToClient(h, &p);
+    RECT r;
+    GetClientRect(h, &r);
+    int edge = px(6);
+    if (!IsZoomed(h)) {
+      bool lft = p.x < edge, rgt = p.x >= r.right - edge, up = p.y < edge,
+           down = p.y >= r.bottom - edge;
+      if (up)
+        return lft ? HTTOPLEFT : rgt ? HTTOPRIGHT : HTTOP;
+      if (down)
+        return lft ? HTBOTTOMLEFT : rgt ? HTBOTTOMRIGHT : HTBOTTOM;
+      if (lft)
+        return HTLEFT;
+      if (rgt)
+        return HTRIGHT;
+    }
+    if (p.y < px(47) &&
+        ChildWindowFromPointEx(h, p, CWP_SKIPINVISIBLE | CWP_SKIPDISABLED) == h)
+      return HTCAPTION;
+    return HTCLIENT;
+  }
   case WM_SIZE:
     layout();
     return 0;
@@ -517,8 +680,14 @@ LRESULT CALLBACK proc(HWND h, UINT m, WPARAM w, LPARAM l) {
         }
       return 0;
     }
-    if (id == Address)
+    if (id == Address) {
+      if (HIWORD(w) == EN_CHANGE && !settingAddress) {
+        std::wstring query(GetWindowTextLengthW(edit) + 1, 0);
+        GetWindowTextW(edit, query.data(), (int)query.size());
+        browser_action(41, 0, query.c_str());
+      }
       return 0;
+    }
     if (id == More || id == AllTabs) {
       popup(id);
       return 0;
@@ -526,6 +695,18 @@ LRESULT CALLBACK proc(HWND h, UINT m, WPARAM w, LPARAM l) {
     if (id == FocusAddress) {
       SetFocus(edit);
       SendMessageW(edit, EM_SETSEL, 0, -1);
+      return 0;
+    }
+    if (id == CaptionMinimize) {
+      ShowWindow(h, SW_MINIMIZE);
+      return 0;
+    }
+    if (id == CaptionMaximize) {
+      ShowWindow(h, IsZoomed(h) ? SW_RESTORE : SW_MAXIMIZE);
+      return 0;
+    }
+    if (id == CaptionCloseWindow) {
+      PostMessageW(h, WM_CLOSE, 0, 0);
       return 0;
     }
     if (id > 0 && id <= FindNext) {
@@ -574,18 +755,32 @@ LRESULT CALLBACK proc(HWND h, UINT m, WPARAM w, LPARAM l) {
     return 1;
   case WM_PAINT: {
     PAINTSTRUCT ps;
-    auto dc = BeginPaint(h, &ps);
+    auto target = BeginPaint(h, &ps);
     RECT r;
     GetClientRect(h, &r);
-    colorRect(dc, r, paper);
-    RECT tb{0, 0, left ? std::min(px(gutter), int(r.right) / 2) : r.right,
-            left ? r.bottom : px(47)};
-    colorRect(dc, tb, band);
-    RECT field{addressX, addressY, addressX + addressW, addressY + px(35)};
-    rounded(dc, field, active, GetFocus() == edit ? accent : line, 9);
+    {
+      PaintBuffer frame(target, r);
+      auto dc = frame.dc;
+      colorRect(dc, r, paper);
+      RECT tb{0, 0, left ? std::min(px(gutter), int(r.right) / 2) : r.right,
+              left ? r.bottom : px(47)};
+      colorRect(dc, tb, band);
+      RECT field{addressX, addressY, addressX + addressW, addressY + px(35)};
+      rounded(dc, field, active, GetFocus() == edit ? RGB(144, 176, 155) : line,
+              12);
+      if (left) {
+        RECT wordmark{px(53), 0, px(150), px(47)};
+        text(dc, L"sisu", wordmark, ink, font);
+      }
+    }
     EndPaint(h, &ps);
     return 0;
   }
+  case WM_CTLCOLORLISTBOX:
+    SetBkColor((HDC)w, active);
+    SetTextColor((HDC)w, ink);
+    SetDCBrushColor((HDC)w, active);
+    return (LRESULT)GetStockObject(DC_BRUSH);
   case WM_CTLCOLORSTATIC:
     SetDCBrushColor((HDC)w, RGB(16, 17, 19));
     return (LRESULT)GetStockObject(DC_BRUSH);
@@ -596,6 +791,10 @@ LRESULT CALLBACK proc(HWND h, UINT m, WPARAM w, LPARAM l) {
     return (LRESULT)GetStockObject(DC_BRUSH);
   case WM_MEASUREITEM: {
     auto m = (MEASUREITEMSTRUCT *)l;
+    if (m->CtlType == ODT_LISTBOX) {
+      m->itemHeight = px(34);
+      return TRUE;
+    }
     if (m->CtlType == ODT_MENU) {
       auto row = (MenuRow *)m->itemData;
       m->itemHeight = px(row && row->id ? 33 : 9);
@@ -605,6 +804,33 @@ LRESULT CALLBACK proc(HWND h, UINT m, WPARAM w, LPARAM l) {
     break;
   }
   case WM_DRAWITEM: {
+    auto item = (DRAWITEMSTRUCT *)l;
+    if (item->CtlType == ODT_LISTBOX) {
+      auto r = item->rcItem;
+      PaintBuffer pixels(item->hDC, r);
+      auto dc = pixels.dc;
+      colorRect(dc, r, active);
+      if (item->itemID != (UINT)-1) {
+        bool selected = (item->itemState & ODS_SELECTED) != 0;
+        if (selected) {
+          auto box = r;
+          InflateRect(&box, -4, -2);
+          rounded(dc, box, RGB(51, 65, 57), RGB(51, 65, 57), 8);
+        }
+        auto length =
+            SendMessageW(item->hwndItem, LB_GETTEXTLEN, item->itemID, 0);
+        if (length >= 0 && length <= 8192) {
+          std::wstring label((size_t)length + 1, 0);
+          SendMessageW(item->hwndItem, LB_GETTEXT, item->itemID,
+                       (LPARAM)label.data());
+          icon(dc, item->itemID == 0 ? Find : History, r.left + px(20),
+               (r.top + r.bottom) / 2, muted);
+          RECT textBox{r.left + px(40), r.top, r.right - px(12), r.bottom};
+          text(dc, label, textBox, ink, font);
+        }
+      }
+      return TRUE;
+    }
     if (((DRAWITEMSTRUCT *)l)->CtlType == ODT_MENU) {
       drawMenu((DRAWITEMSTRUCT *)l);
       return TRUE;
@@ -612,10 +838,12 @@ LRESULT CALLBACK proc(HWND h, UINT m, WPARAM w, LPARAM l) {
     auto d = (DRAWITEMSTRUCT *)l;
     int id = d->CtlID;
     RECT r = d->rcItem;
-    HDC dc = d->hDC;
+    PaintBuffer pixels(d->hDC, r);
+    HDC dc = pixels.dc;
     bool tab = id >= 100,
-         strip = tab || id == NewTab || id == Placement || id == AllTabs;
-    colorRect(dc, r, id == CloseTab ? active : (strip ? band : paper));
+         strip = tab || id == NewTab || id == Placement || id == AllTabs ||
+                 (id >= CaptionMinimize && id <= CaptionCloseWindow);
+    colorRect(dc, r, id == CloseTab ? RGB(43, 47, 47) : (strip ? band : paper));
     if (tab) {
       auto it = std::find_if(tabs.begin(), tabs.end(),
                              [&](auto &t) { return t.button == d->hwndItem; });
@@ -623,7 +851,7 @@ LRESULT CALLBACK proc(HWND h, UINT m, WPARAM w, LPARAM l) {
         return TRUE;
       bool on = it->id == current;
       if (on)
-        rounded(dc, r, active, line, 10);
+        rounded(dc, r, RGB(43, 47, 47), RGB(77, 91, 87), 11);
       icon(dc, 0, px(19), r.bottom / 2, on ? ink : muted);
       RECT label{px(35), 0, r.right - px(on ? 34 : 6), r.bottom};
       text(dc, it->title, label, on ? ink : muted, labelFont);
@@ -642,7 +870,10 @@ LRESULT CALLBACK proc(HWND h, UINT m, WPARAM w, LPARAM l) {
       }
     } else {
       if (hovered == d->hwndItem || (d->itemState & ODS_SELECTED))
-        rounded(dc, r, RGB(48, 50, 54), RGB(48, 50, 54), 8);
+        rounded(dc, r,
+                id == CaptionCloseWindow ? RGB(166, 45, 55) : RGB(48, 50, 54),
+                id == CaptionCloseWindow ? RGB(166, 45, 55) : RGB(48, 50, 54),
+                8);
       icon(dc, id, r.right / 2, r.bottom / 2,
            (d->itemState & ODS_DISABLED) ? line : muted);
     }
@@ -678,7 +909,7 @@ extern "C" HWND shell_open(bool vertical, int width, bool priv,
   wc.lpszClassName = L"DesktopBrowserFrame";
   RegisterClassW(&wc);
   window = CreateWindowExW(WS_EX_DLGMODALFRAME, wc.lpszClassName,
-                           priv ? L"Private browsing" : L"Desktop Browser",
+                           priv ? L"Sisu — Private browsing" : L"Sisu",
                            WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN, CW_USEDEFAULT,
                            CW_USEDEFAULT, 1120, 780, nullptr, nullptr, module,
                            nullptr);
@@ -699,6 +930,11 @@ extern "C" HWND shell_open(bool vertical, int width, bool priv,
     window = nullptr;
     return nullptr;
   }
+  SetWindowPos(window, nullptr, 0, 0, 0, 0,
+               SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE |
+                   SWP_FRAMECHANGED);
+  Gdiplus::GdiplusStartupInput drawOptions;
+  Gdiplus::GdiplusStartup(&drawingToken, &drawOptions, nullptr);
   BOOL dark = TRUE;
   DwmSetWindowAttribute(window, 20, &dark, sizeof(dark));
   COLORREF caption = band;
@@ -706,6 +942,10 @@ extern "C" HWND shell_open(bool vertical, int width, bool priv,
   DwmSetWindowAttribute(window, 36, &ink, sizeof(ink));
   CoCreateInstance(CLSID_AccPropServices, nullptr, CLSCTX_INPROC_SERVER,
                    IID_PPV_ARGS(&accessibility));
+  buttons[CaptionMinimize] = button(CaptionMinimize, L"Minimize");
+  buttons[CaptionMaximize] =
+      button(CaptionMaximize, L"CaptionMaximize or restore");
+  buttons[CaptionCloseWindow] = button(CaptionCloseWindow, L"Close window");
   buttons[Back] = button(Back, L"Back");
   buttons[Forward] = button(Forward, L"Forward");
   buttons[Reload] = button(Reload, L"Reload");
@@ -725,20 +965,64 @@ extern "C" HWND shell_open(bool vertical, int width, bool priv,
   SendMessageW(edit, EM_SETLIMITTEXT, 8192, 0);
   SendMessageW(edit, EM_SETCUEBANNER, TRUE,
                (LPARAM)L"Search or enter an address");
-  viewport = CreateWindowExW(0, L"STATIC", nullptr,
-                             WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN, 0, 0, 1,
-                             1, window, nullptr, module, nullptr);
+  viewport =
+      CreateWindowExW(0, L"STATIC", nullptr,
+                      WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS,
+                      0, 0, 1, 1, window, nullptr, module, nullptr);
+  addressSuggestions = CreateWindowExW(
+      WS_EX_NOACTIVATE, L"LISTBOX", L"Address suggestions",
+      WS_CHILD | WS_CLIPSIBLINGS | WS_BORDER | LBS_NOTIFY | LBS_OWNERDRAWFIXED |
+          LBS_HASSTRINGS | LBS_NOINTEGRALHEIGHT,
+      0, 0, 1, 1, window, nullptr, module, nullptr);
+  SetWindowSubclass(
+      addressSuggestions,
+      [](HWND h, UINT msg, WPARAM w, LPARAM l, UINT_PTR, DWORD_PTR) -> LRESULT {
+        if (msg == WM_MOUSEACTIVATE)
+          return MA_NOACTIVATE;
+        if (msg == WM_LBUTTONUP) {
+          auto hit = (DWORD)SendMessageW(h, LB_ITEMFROMPOINT, 0, l);
+          auto index = LOWORD(hit);
+          if (!HIWORD(hit) && index < suggestionValues.size()) {
+            auto url = suggestionValues[index];
+            ShowWindow(h, SW_HIDE);
+            browser_action(Address, 0, url.c_str());
+          }
+          return 0;
+        }
+        return DefSubclassProc(h, msg, w, l);
+      },
+      3, 0);
   setFonts();
+  SendMessageW(addressSuggestions, WM_SETFONT, (WPARAM)font, TRUE);
   layout();
   ShowWindow(window, SW_SHOW);
   return viewport;
 }
-extern "C" HWND shell_prepare_page() {
+LRESULT CALLBACK surfaceProc(HWND h, UINT msg, WPARAM w, LPARAM l, UINT_PTR,
+                             DWORD_PTR) {
+  if (msg == WM_ERASEBKGND) {
+    RECT r;
+    GetClientRect(h, &r);
+    colorRect((HDC)w, r, RGB(16, 17, 19));
+    return 1;
+  }
+  if (msg == WM_CTLCOLORSTATIC) {
+    SetDCBrushColor((HDC)w, RGB(16, 17, 19));
+    return (LRESULT)GetStockObject(DC_BRUSH);
+  }
+  return DefSubclassProc(h, msg, w, l);
+}
+extern "C" HWND shell_prepare_page(int *width, int *height) {
   RECT r{};
   GetClientRect(viewport, &r);
-  return CreateWindowExW(
+  *width = r.right;
+  *height = r.bottom;
+  HWND page = CreateWindowExW(
       0, L"STATIC", nullptr, WS_CHILD | WS_CLIPCHILDREN | WS_CLIPSIBLINGS, 0, 0,
       r.right, r.bottom, viewport, nullptr, GetModuleHandleW(nullptr), nullptr);
+  if (page)
+    SetWindowSubclass(page, surfaceProc, 4, 0);
+  return page;
 }
 extern "C" void shell_discard_stage(HWND stage) { DestroyWindow(stage); }
 extern "C" void shell_ready(int id) {
@@ -798,7 +1082,10 @@ extern "C" void shell_status(const wchar_t *url, bool back, bool forward,
     return;
   if (activeUrl != url) {
     activeUrl = url;
+    settingAddress = true;
     SetWindowTextW(edit, url);
+    settingAddress = false;
+    ShowWindow(addressSuggestions, SW_HIDE);
   }
   loading = busy;
   blocking = enabled;
@@ -826,8 +1113,7 @@ extern "C" void shell_destroy() {
   if (!window)
     return;
   DestroyWindow(window);
-  DeleteObject(symbolFont);
-  DeleteObject(smallSymbol);
+  Gdiplus::GdiplusShutdown(drawingToken);
   DestroyWindow(retiringPages);
   retiringPages = nullptr;
   if (accessibility) {
@@ -840,4 +1126,29 @@ extern "C" void shell_destroy() {
     DeleteObject(font);
   if (labelFont)
     DeleteObject(labelFont);
+}
+
+extern "C" void shell_suggestions(const wchar_t *query,
+                                  const wchar_t *const *urls, int count) {
+  suggestionValues.clear();
+  SendMessageW(addressSuggestions, LB_RESETCONTENT, 0, 0);
+  if (!*query) {
+    ShowWindow(addressSuggestions, SW_HIDE);
+    return;
+  }
+  suggestionValues.push_back(query);
+  std::wstring title = query;
+  if (title.find(L'.') == std::wstring::npos &&
+      title.find(L':') == std::wstring::npos && title != L"#settings")
+    title = L"Search for “" + title + L"”";
+  SendMessageW(addressSuggestions, LB_ADDSTRING, 0, (LPARAM)title.c_str());
+  for (int i = 0; i < std::min(count, 7); i++) {
+    suggestionValues.push_back(urls[i]);
+    SendMessageW(addressSuggestions, LB_ADDSTRING, 0, (LPARAM)urls[i]);
+  }
+  SendMessageW(addressSuggestions, LB_SETCURSEL, 0, 0);
+  SendMessageW(addressSuggestions, LB_SETITEMHEIGHT, 0, px(31));
+  SetWindowPos(addressSuggestions, HWND_TOP, addressX, addressY + px(38),
+               addressW, px(31 * (int)suggestionValues.size() + 4),
+               SWP_SHOWWINDOW | SWP_NOACTIVATE);
 }

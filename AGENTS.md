@@ -34,6 +34,8 @@ Run cargo fmt --all -- --check and cargo test --release --locked --no-default-fe
 
 The recorded two-tab baseline is 138.56 MiB median private working set and 226.93 MiB median private commit over the full Windows process tree. Shared pages and external GPU memory are excluded. These figures are a baseline, never a claim of universal superiority.
 
+The user observed approximately equal memory to Chrome with substantially fewer features. Read docs/foundation-reassessment.md. No matched result establishes a benefit from CEF or an engine switch to Firefox. Keep this product concern central to further architecture decisions. Firefox is being evaluated as an extension-capable alternative, with no approved engine migration.
+
 ## Invariants
 
 - Preserve TLS validation, sandboxing, origin isolation and browser/site/extension privilege separation. Never add no-sandbox or remote debugging to make the app pass.
@@ -52,3 +54,5 @@ The recorded two-tab baseline is 138.56 MiB median private working set and 226.9
 Consult docs/plan-alignment.md for the section-by-section audit. Resolve extension tab topology first, then complete safe session/crash recovery and cross-platform shell acceptance. Partitioning, fingerprint policy, DNS/proxy/WebRTC, background egress, generic cosmetics, verified list updates, accessibility, IME and real-site workflows remain release gates. Source publication and installable signed releases are separate milestones.
 
 Keep this context and the checkpoint current when behavior or validation changes. Preserve decisions and tests that reveal unsupported requirements.
+
+The latest Windows UI uses explicit Arial and GDI+ geometric icons. Keep icons independent of installed symbol-font mappings. The tab row includes minimize/maximize/close and caption hit testing. The shell address dropdown reads a bounded local recent-URL cache and bookmarks. Typing alone must not trigger provider autocomplete. The package/executable/profile identifiers retain their original working names for compatibility.
