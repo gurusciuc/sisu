@@ -1,0 +1,28 @@
+# Alignment with the supplied browser plan
+
+Reviewed against the user's “Low-memory Rust browser — product and engineering plan”, planning draft dated 16 November 2026. The original reference is preserved as product-plan.md. Its statements that only planning is authorized and publishing has not started describe that earlier draft. The user's subsequent direct requests authorize implementation and GitHub publication.
+
+This audit reports the current feasibility milestone. An everyday-browser release still depends on the open gates below.
+
+| Plan section | Current implementation and evidence | Remaining work |
+| --- | --- | --- |
+| 1 · Everyday low-memory goal | Rust shell, mature engine, live document/draft checks and full-process release baseline. | Broad real-site acceptance and calibrated memory/latency budgets. |
+| 2 · Mature engine first | CEF Chrome runtime. One engine. Alternatives and integration costs documented in architecture.md. | Settle the extension/window topology before final production foundation selection. Custom Rust engine remains a separate research track. |
+| 3 · Feasibility | Real Windows navigation, layout, profiles, worker fetches, synthetic media, loopback WebRTC, actual uBOL DNR and Proton onboarding. MV3 fixture exposes real window-ID mismatch. | Native macOS/Linux, IME, accessibility, popup anchoring, permissions, crash recovery, complete Proton and provider workflows. |
+| 4 · Measurement | Release process-tree private working set/commit, ten raw samples, paint/report timings, repeated tab teardown and surface transition samples. | Matched competitor workloads, video/call corpus, scrolling/input/switch latency, graphics attribution, multi-hour growth, PSS and physical footprint. |
+| 5 · Small architecture | Compiled Win32 controls, Rust policy/state, shared request context per profile. | General window model, centralized future privacy exposure policy, SQLite migration if measured persistence needs justify it. The small prototype uses bounded atomic JSON for bookmarks/settings and engine-owned history. |
+| 6 · Native blocking | Hash-pinned EasyList/EasyPrivacy, adblock-rust, pre-request cancellation, redirect/frame/worker tests, domain cosmetic filtering, per-site pause. | Generic cosmetic injection, controlled replacements/scriptlets, signed list updates, previous-good rollback and swap-peak measurement, real-site breakage corpus. |
+| 7 · Usable privacy | HTTPS domain entry, ordinary cookie persistence, private off-record data, conservative private permissions, separate extension lab, no shell telemetry endpoint or typing suggestions. | Partitioning/egress audit, fingerprint policy, DNS/proxy/VPN enforcement and abnormal-exit cleanup. Private browser preferences are ephemeral in this implementation, which the plan permits as an implementation choice. |
+| 8 · Privacy evidence | Factual blocking state and explicit limitations. | PrivacyTests.org automation and controlled fingerprint, storage/cache, DNS, WebRTC and proxy tests. No numerical privacy score is displayed. |
+| 9 · Resource policy | Shell auto-discard disabled. Same live pages survive layout changes. Anchor draft survives repeated tab creation/closure. Last ordinary page can reopen. | Lazy multi-tab restore, closed-tab metadata bounds, opt-in protected-work discard, keep-awake override and latency/reload measurements. |
+| 10 · Fundamentals | Sandboxed CEF bootstrap, upstream TLS/origin defaults, no renderer bridge to settings, isolated extension content-script regression, clean teardown assertions. | Effective sandbox inspection on each host, download security, input/accessibility and hardware/media suites, renderer recovery and resource pressure handling. |
+| 11 · Everyday workflows and layout | Native address/nav/tabs, title and loading state, find/zoom, bookmarks, history/download links, settings in a tab, top/left same-model layout and bounded sidebar width. | Complete popup/window UX, safe ordinary session restore, validated extension surfaces, right/bottom layout implementations and every supported OS. |
+| 12 · Open source/distribution | Apache-2.0, copyright NOTICE, third-party notices, contribution/security/build docs, workflow definitions and local versioned preview archive script. | Verified native CI, signed installers, public release workflow, secure update/rollback. Public source upload is separately authorized by the user. |
+| 13 · Staged delivery | Current work spans feasibility and baseline stages. Concrete blockers remain visible. | Everyday alpha through hardened release exit gates. Passing the prototype suite cannot close those stages. |
+| 14 · Custom engine research | Separate future research track, no second renderer loaded. | A dedicated research proposal and independently scoped tests when requested. |
+
+## Immediate decisions and acceptance gates
+
+The MV3 test reports two distinct underlying Chrome window IDs, with both tabs marked active, for one visible shell window. Align native tab identity and extension UI first. The next engineering experiment should compare the same extension workflow in this custom shell, CEF's full reference window and a minimal patch approach. A final UI toolkit and engine commitment depends on the result.
+
+The current memory-growth check keeps one anchor page alive and performs 12 creation/navigation/close cycles. Process count returns to six, with two renderers. Private working set rises from 125.34 to 139.96 MiB, and private commit from 209.84 to 229.89 MiB. More warm-cache and duration evidence is needed before assigning a regression threshold. Raw data is in evidence/windows-x64/growth*.json.

@@ -1,0 +1,528 @@
+{
+    "method":  "PrintWindow(PW_RENDERFULLCONTENT), 54 viewport points per sample",
+    "clickBeforeSample":  3,
+    "samples":  [
+                    {
+                        "ms":  1.6775,
+                        "black":  0,
+                        "oldPage":  45,
+                        "newPage":  0,
+                        "white":  7,
+                        "points":  54
+                    },
+                    {
+                        "ms":  30.908700000000003,
+                        "black":  0,
+                        "oldPage":  45,
+                        "newPage":  0,
+                        "white":  7,
+                        "points":  54
+                    },
+                    {
+                        "ms":  61.388400000000004,
+                        "black":  0,
+                        "oldPage":  45,
+                        "newPage":  0,
+                        "white":  7,
+                        "points":  54
+                    },
+                    {
+                        "ms":  92.5184,
+                        "black":  0,
+                        "oldPage":  0,
+                        "newPage":  0,
+                        "white":  0,
+                        "points":  54
+                    },
+                    {
+                        "ms":  216.59810000000002,
+                        "black":  0,
+                        "oldPage":  0,
+                        "newPage":  52,
+                        "white":  0,
+                        "points":  54
+                    },
+                    {
+                        "ms":  262.5502,
+                        "black":  0,
+                        "oldPage":  0,
+                        "newPage":  52,
+                        "white":  0,
+                        "points":  54
+                    },
+                    {
+                        "ms":  309.1739,
+                        "black":  0,
+                        "oldPage":  0,
+                        "newPage":  52,
+                        "white":  0,
+                        "points":  54
+                    },
+                    {
+                        "ms":  357.2731,
+                        "black":  0,
+                        "oldPage":  0,
+                        "newPage":  52,
+                        "white":  0,
+                        "points":  54
+                    },
+                    {
+                        "ms":  388.3256,
+                        "black":  0,
+                        "oldPage":  0,
+                        "newPage":  52,
+                        "white":  0,
+                        "points":  54
+                    },
+                    {
+                        "ms":  418.99920000000003,
+                        "black":  0,
+                        "oldPage":  0,
+                        "newPage":  52,
+                        "white":  0,
+                        "points":  54
+                    },
+                    {
+                        "ms":  449.4621,
+                        "black":  0,
+                        "oldPage":  0,
+                        "newPage":  52,
+                        "white":  0,
+                        "points":  54
+                    },
+                    {
+                        "ms":  481.2524,
+                        "black":  0,
+                        "oldPage":  0,
+                        "newPage":  52,
+                        "white":  0,
+                        "points":  54
+                    },
+                    {
+                        "ms":  513.106,
+                        "black":  0,
+                        "oldPage":  0,
+                        "newPage":  52,
+                        "white":  0,
+                        "points":  54
+                    },
+                    {
+                        "ms":  543.6689,
+                        "black":  0,
+                        "oldPage":  0,
+                        "newPage":  52,
+                        "white":  0,
+                        "points":  54
+                    },
+                    {
+                        "ms":  575.3695,
+                        "black":  0,
+                        "oldPage":  0,
+                        "newPage":  52,
+                        "white":  0,
+                        "points":  54
+                    },
+                    {
+                        "ms":  606.64780000000007,
+                        "black":  0,
+                        "oldPage":  0,
+                        "newPage":  52,
+                        "white":  0,
+                        "points":  54
+                    },
+                    {
+                        "ms":  636.2437,
+                        "black":  0,
+                        "oldPage":  0,
+                        "newPage":  52,
+                        "white":  0,
+                        "points":  54
+                    },
+                    {
+                        "ms":  668.2079,
+                        "black":  0,
+                        "oldPage":  0,
+                        "newPage":  52,
+                        "white":  0,
+                        "points":  54
+                    },
+                    {
+                        "ms":  699.2908,
+                        "black":  0,
+                        "oldPage":  0,
+                        "newPage":  52,
+                        "white":  0,
+                        "points":  54
+                    },
+                    {
+                        "ms":  730.21670000000006,
+                        "black":  0,
+                        "oldPage":  0,
+                        "newPage":  52,
+                        "white":  0,
+                        "points":  54
+                    },
+                    {
+                        "ms":  762.2675,
+                        "black":  0,
+                        "oldPage":  0,
+                        "newPage":  52,
+                        "white":  0,
+                        "points":  54
+                    },
+                    {
+                        "ms":  793.5316,
+                        "black":  0,
+                        "oldPage":  0,
+                        "newPage":  52,
+                        "white":  0,
+                        "points":  54
+                    },
+                    {
+                        "ms":  824.7458,
+                        "black":  0,
+                        "oldPage":  0,
+                        "newPage":  52,
+                        "white":  0,
+                        "points":  54
+                    },
+                    {
+                        "ms":  855.6219000000001,
+                        "black":  0,
+                        "oldPage":  0,
+                        "newPage":  52,
+                        "white":  0,
+                        "points":  54
+                    },
+                    {
+                        "ms":  887.52320000000009,
+                        "black":  0,
+                        "oldPage":  0,
+                        "newPage":  52,
+                        "white":  0,
+                        "points":  54
+                    },
+                    {
+                        "ms":  918.4641,
+                        "black":  0,
+                        "oldPage":  0,
+                        "newPage":  52,
+                        "white":  0,
+                        "points":  54
+                    },
+                    {
+                        "ms":  965.38190000000009,
+                        "black":  0,
+                        "oldPage":  0,
+                        "newPage":  52,
+                        "white":  0,
+                        "points":  54
+                    },
+                    {
+                        "ms":  996.50700000000006,
+                        "black":  0,
+                        "oldPage":  0,
+                        "newPage":  52,
+                        "white":  0,
+                        "points":  54
+                    },
+                    {
+                        "ms":  1041.796,
+                        "black":  0,
+                        "oldPage":  0,
+                        "newPage":  52,
+                        "white":  0,
+                        "points":  54
+                    },
+                    {
+                        "ms":  1072.8445000000002,
+                        "black":  0,
+                        "oldPage":  0,
+                        "newPage":  52,
+                        "white":  0,
+                        "points":  54
+                    },
+                    {
+                        "ms":  1103.6264,
+                        "black":  0,
+                        "oldPage":  0,
+                        "newPage":  52,
+                        "white":  0,
+                        "points":  54
+                    },
+                    {
+                        "ms":  1134.8113,
+                        "black":  0,
+                        "oldPage":  0,
+                        "newPage":  52,
+                        "white":  0,
+                        "points":  54
+                    },
+                    {
+                        "ms":  1166.4461000000001,
+                        "black":  0,
+                        "oldPage":  0,
+                        "newPage":  52,
+                        "white":  0,
+                        "points":  54
+                    },
+                    {
+                        "ms":  1198.1435000000001,
+                        "black":  0,
+                        "oldPage":  0,
+                        "newPage":  52,
+                        "white":  0,
+                        "points":  54
+                    },
+                    {
+                        "ms":  1228.7403000000002,
+                        "black":  0,
+                        "oldPage":  0,
+                        "newPage":  52,
+                        "white":  0,
+                        "points":  54
+                    },
+                    {
+                        "ms":  1260.2079,
+                        "black":  0,
+                        "oldPage":  0,
+                        "newPage":  52,
+                        "white":  0,
+                        "points":  54
+                    },
+                    {
+                        "ms":  1305.5581,
+                        "black":  0,
+                        "oldPage":  0,
+                        "newPage":  52,
+                        "white":  0,
+                        "points":  54
+                    },
+                    {
+                        "ms":  1335.1511,
+                        "black":  0,
+                        "oldPage":  0,
+                        "newPage":  52,
+                        "white":  0,
+                        "points":  54
+                    },
+                    {
+                        "ms":  1365.3237000000001,
+                        "black":  0,
+                        "oldPage":  0,
+                        "newPage":  52,
+                        "white":  0,
+                        "points":  54
+                    },
+                    {
+                        "ms":  1396.6625000000001,
+                        "black":  0,
+                        "oldPage":  0,
+                        "newPage":  52,
+                        "white":  0,
+                        "points":  54
+                    },
+                    {
+                        "ms":  1427.1849,
+                        "black":  0,
+                        "oldPage":  0,
+                        "newPage":  52,
+                        "white":  0,
+                        "points":  54
+                    },
+                    {
+                        "ms":  1458.1678000000002,
+                        "black":  0,
+                        "oldPage":  0,
+                        "newPage":  52,
+                        "white":  0,
+                        "points":  54
+                    },
+                    {
+                        "ms":  1490.116,
+                        "black":  0,
+                        "oldPage":  0,
+                        "newPage":  52,
+                        "white":  0,
+                        "points":  54
+                    },
+                    {
+                        "ms":  1522.2147,
+                        "black":  0,
+                        "oldPage":  0,
+                        "newPage":  52,
+                        "white":  0,
+                        "points":  54
+                    },
+                    {
+                        "ms":  1552.8064000000002,
+                        "black":  0,
+                        "oldPage":  0,
+                        "newPage":  52,
+                        "white":  0,
+                        "points":  54
+                    },
+                    {
+                        "ms":  1584.3783,
+                        "black":  0,
+                        "oldPage":  0,
+                        "newPage":  52,
+                        "white":  0,
+                        "points":  54
+                    },
+                    {
+                        "ms":  1615.1575,
+                        "black":  0,
+                        "oldPage":  0,
+                        "newPage":  52,
+                        "white":  0,
+                        "points":  54
+                    },
+                    {
+                        "ms":  1645.431,
+                        "black":  0,
+                        "oldPage":  0,
+                        "newPage":  52,
+                        "white":  0,
+                        "points":  54
+                    },
+                    {
+                        "ms":  1676.5087,
+                        "black":  0,
+                        "oldPage":  0,
+                        "newPage":  52,
+                        "white":  0,
+                        "points":  54
+                    },
+                    {
+                        "ms":  1707.2901000000002,
+                        "black":  0,
+                        "oldPage":  0,
+                        "newPage":  52,
+                        "white":  0,
+                        "points":  54
+                    },
+                    {
+                        "ms":  1738.4431000000002,
+                        "black":  0,
+                        "oldPage":  0,
+                        "newPage":  52,
+                        "white":  0,
+                        "points":  54
+                    },
+                    {
+                        "ms":  1769.1738,
+                        "black":  0,
+                        "oldPage":  0,
+                        "newPage":  52,
+                        "white":  0,
+                        "points":  54
+                    },
+                    {
+                        "ms":  1799.4478000000001,
+                        "black":  0,
+                        "oldPage":  0,
+                        "newPage":  52,
+                        "white":  0,
+                        "points":  54
+                    },
+                    {
+                        "ms":  1829.5274000000002,
+                        "black":  0,
+                        "oldPage":  0,
+                        "newPage":  52,
+                        "white":  0,
+                        "points":  54
+                    },
+                    {
+                        "ms":  1860.1423,
+                        "black":  0,
+                        "oldPage":  0,
+                        "newPage":  52,
+                        "white":  0,
+                        "points":  54
+                    },
+                    {
+                        "ms":  1890.423,
+                        "black":  0,
+                        "oldPage":  0,
+                        "newPage":  52,
+                        "white":  0,
+                        "points":  54
+                    },
+                    {
+                        "ms":  1922.76,
+                        "black":  0,
+                        "oldPage":  0,
+                        "newPage":  52,
+                        "white":  0,
+                        "points":  54
+                    },
+                    {
+                        "ms":  1953.14,
+                        "black":  0,
+                        "oldPage":  0,
+                        "newPage":  52,
+                        "white":  0,
+                        "points":  54
+                    },
+                    {
+                        "ms":  1984.4853,
+                        "black":  0,
+                        "oldPage":  0,
+                        "newPage":  52,
+                        "white":  0,
+                        "points":  54
+                    },
+                    {
+                        "ms":  2016.6329,
+                        "black":  0,
+                        "oldPage":  0,
+                        "newPage":  52,
+                        "white":  0,
+                        "points":  54
+                    },
+                    {
+                        "ms":  2048.5975000000003,
+                        "black":  0,
+                        "oldPage":  0,
+                        "newPage":  52,
+                        "white":  0,
+                        "points":  54
+                    },
+                    {
+                        "ms":  2080.1818000000003,
+                        "black":  0,
+                        "oldPage":  0,
+                        "newPage":  52,
+                        "white":  0,
+                        "points":  54
+                    },
+                    {
+                        "ms":  2112.355,
+                        "black":  0,
+                        "oldPage":  0,
+                        "newPage":  52,
+                        "white":  0,
+                        "points":  54
+                    },
+                    {
+                        "ms":  2142.5676000000003,
+                        "black":  0,
+                        "oldPage":  0,
+                        "newPage":  52,
+                        "white":  0,
+                        "points":  54
+                    },
+                    {
+                        "ms":  2174.1952,
+                        "black":  0,
+                        "oldPage":  0,
+                        "newPage":  52,
+                        "white":  0,
+                        "points":  54
+                    }
+                ],
+    "allBlack":  0,
+    "allWhite":  0
+}

@@ -1,0 +1,23 @@
+{
+  "checks": {
+    "dedicatedWorker": {
+      "allowed": true,
+      "targetReached": false
+    },
+    "serviceWorker": {
+      "allowed": true,
+      "targetReached": false
+    },
+    "localMedia": true,
+    "loopbackCall": "roundtrip"
+  },
+  "requests": [
+    "/capabilities",
+    "/dedicated.js",
+    "/favicon.ico",
+    "/control.js?dedicated",
+    "/service.js",
+    "/control.js?service"
+  ],
+  "workerNetworkProtected": true
+}

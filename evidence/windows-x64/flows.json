@@ -1,0 +1,267 @@
+{
+  "engine": "CEF 156.0.30 / Chromium 156.0.8078.96",
+  "os": "10.0.22631",
+  "arch": "x64",
+  "reports": [
+    {
+      "run": "tab-first",
+      "startToReportMs": 870,
+      "state": {
+        "run": "tab-first",
+        "documentId": "c029d9a7-a4c5-495e-9908-ea4dbcd92655",
+        "prior": "empty",
+        "cookieBefore": "",
+        "draft": "Unsubmitted note c029d9a7-a4c5-495e-9908-ea4dbcd92655",
+        "control": "true",
+        "hidden": "true",
+        "width": "1104",
+        "height": "642",
+        "scale": "1",
+        "extension": "",
+        "isolated": "true",
+        "visibility": "visible",
+        "topology": "",
+        "firstPaint": "360"
+      },
+      "requests": [
+        "/?run=tab-first",
+        "/control.js",
+        "/subframe",
+        "/probe-ad.js?allowed",
+        "/bounce",
+        "/bounce",
+        "/favicon.ico"
+      ]
+    },
+    {
+      "run": "layout",
+      "firstDocument": "c029d9a7-a4c5-495e-9908-ea4dbcd92655",
+      "draft": "Unsubmitted note c029d9a7-a4c5-495e-9908-ea4dbcd92655",
+      "secondDocument": "b722967c-4c11-4094-84a3-73dd7a4403e6",
+      "topWidth": 1104,
+      "leftWidth": "888",
+      "restored": true
+    },
+    {
+      "run": "private-one",
+      "startToReportMs": 798,
+      "state": {
+        "run": "private-one",
+        "documentId": "6dbd3540-2c54-4b59-991d-07b40b709178",
+        "prior": "empty",
+        "cookieBefore": "",
+        "draft": "",
+        "control": "true",
+        "hidden": "true",
+        "width": "1104",
+        "height": "642",
+        "scale": "1",
+        "extension": "",
+        "isolated": "true",
+        "visibility": "visible",
+        "topology": "",
+        "firstPaint": "316"
+      },
+      "requests": [
+        "/?run=private-one",
+        "/control.js",
+        "/subframe",
+        "/probe-ad.js?allowed",
+        "/bounce",
+        "/bounce",
+        "/favicon.ico"
+      ]
+    },
+    {
+      "run": "private-two",
+      "startToReportMs": 789,
+      "state": {
+        "run": "private-two",
+        "documentId": "ec434119-1579-4d3f-983c-95bf07948e50",
+        "prior": "empty",
+        "cookieBefore": "",
+        "draft": "",
+        "control": "true",
+        "hidden": "true",
+        "width": "1104",
+        "height": "642",
+        "scale": "1",
+        "extension": "",
+        "isolated": "true",
+        "visibility": "visible",
+        "topology": "",
+        "firstPaint": "284"
+      },
+      "requests": [
+        "/?run=private-two",
+        "/control.js",
+        "/subframe",
+        "/probe-ad.js?allowed",
+        "/bounce",
+        "/bounce",
+        "/favicon.ico"
+      ]
+    },
+    {
+      "run": "ordinary-reopened",
+      "startToReportMs": 799,
+      "state": {
+        "run": "ordinary-reopened",
+        "documentId": "6135c91e-098f-45fe-896d-df14f7114aa7",
+        "prior": "third",
+        "cookieBefore": "fixture=third",
+        "draft": "",
+        "control": "true",
+        "hidden": "true",
+        "width": "888",
+        "height": "689",
+        "scale": "1",
+        "extension": "",
+        "isolated": "true",
+        "visibility": "visible",
+        "topology": "",
+        "firstPaint": "168"
+      },
+      "requests": [
+        "/?run=ordinary-reopened",
+        "/subframe",
+        "/control.js",
+        "/probe-ad.js?allowed",
+        "/bounce",
+        "/bounce",
+        "/favicon.ico"
+      ]
+    },
+    {
+      "run": "extension-api",
+      "startToReportMs": 484,
+      "state": {
+        "run": "extension-api",
+        "documentId": "cbd9c03f-4581-4ffe-91b2-f90eaa327ac3",
+        "prior": "empty",
+        "cookieBefore": "",
+        "draft": "",
+        "control": "true",
+        "hidden": "false",
+        "width": "1104",
+        "height": "642",
+        "scale": "1",
+        "extension": "195ec3c5-447a-468d-bb74-ba8475684ce2",
+        "isolated": "true",
+        "visibility": "visible",
+        "topology": "{\"senderTab\":447116578,\"senderWindow\":447116577,\"tabs\":[{\"id\":447116578,\"windowId\":447116577,\"active\":true}]}",
+        "firstPaint": "0"
+      },
+      "requests": [
+        "/?run=extension-api",
+        "/control.js",
+        "/probe-ad.js?direct",
+        "/probe-ad.js?allowed",
+        "/bounce",
+        "/ads/!rotator/control.js",
+        "/subframe",
+        "/probe-ad.js?redirect",
+        "/probe-ad.js?frame",
+        "/favicon.ico"
+      ]
+    },
+    {
+      "run": "extension-tab-topology",
+      "shellWindows": 1,
+      "shellTabs": 2,
+      "firstTopology": {
+        "senderTab": 447116578,
+        "senderWindow": 447116577,
+        "tabs": [
+          {
+            "id": 447116578,
+            "windowId": 447116577,
+            "active": true
+          }
+        ]
+      },
+      "secondTopology": {
+        "senderTab": 447116580,
+        "senderWindow": 447116579,
+        "tabs": [
+          {
+            "id": 447116578,
+            "windowId": 447116577,
+            "active": true
+          },
+          {
+            "id": 447116580,
+            "windowId": 447116579,
+            "active": true
+          }
+        ]
+      },
+      "matchesShellWindow": false
+    },
+    {
+      "run": "extension-restart",
+      "startToReportMs": 480,
+      "state": {
+        "run": "extension-restart",
+        "documentId": "8ec6a3ff-5107-412e-bcf4-ed8432ebe88e",
+        "prior": "extension-second",
+        "cookieBefore": "fixture=extension-second",
+        "draft": "",
+        "control": "true",
+        "hidden": "false",
+        "width": "1104",
+        "height": "642",
+        "scale": "1",
+        "extension": "195ec3c5-447a-468d-bb74-ba8475684ce2",
+        "isolated": "true",
+        "visibility": "visible",
+        "topology": "{\"senderTab\":447116632,\"senderWindow\":447116631,\"tabs\":[{\"id\":447116632,\"windowId\":447116631,\"active\":true}]}",
+        "firstPaint": "0"
+      },
+      "requests": [
+        "/?run=extension-restart",
+        "/control.js",
+        "/probe-ad.js?direct",
+        "/probe-ad.js?allowed",
+        "/bounce",
+        "/ads/!rotator/control.js",
+        "/subframe",
+        "/probe-ad.js?redirect",
+        "/probe-ad.js?frame",
+        "/favicon.ico"
+      ]
+    },
+    {
+      "run": "ubol",
+      "startToReportMs": 1743,
+      "state": {
+        "run": "ubol",
+        "documentId": "c70cb0f4-2128-48ba-85ef-88446234c085",
+        "prior": "extension-restart",
+        "cookieBefore": "fixture=extension-restart",
+        "draft": "",
+        "control": "true",
+        "hidden": "false",
+        "width": "1104",
+        "height": "642",
+        "scale": "1",
+        "extension": "",
+        "isolated": "true",
+        "visibility": "visible",
+        "topology": "",
+        "firstPaint": "288"
+      },
+      "requests": [
+        "/?run=ubol",
+        "/subframe",
+        "/control.js",
+        "/probe-ad.js?direct",
+        "/probe-ad.js?allowed",
+        "/bounce",
+        "/probe-ad.js?redirect",
+        "/probe-ad.js?frame",
+        "/favicon.ico"
+      ]
+    }
+  ]
+}

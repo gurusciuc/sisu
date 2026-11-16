@@ -1,0 +1,62 @@
+{
+    "sample":  0,
+    "atMs":  1,
+    "samplingMs":  640,
+    "attempts":  1,
+    "processes":  [
+                      {
+                          "pid":  5392,
+                          "parent":  32044,
+                          "role":  "browser",
+                          "measured":  true,
+                          "workingSetPrivateBytes":  47738880,
+                          "privateCommitBytes":  57913344,
+                          "cpu100ns":  12968750
+                      },
+                      {
+                          "pid":  12696,
+                          "parent":  5392,
+                          "role":  "gpu-process",
+                          "measured":  true,
+                          "workingSetPrivateBytes":  60813312,
+                          "privateCommitBytes":  117604352,
+                          "cpu100ns":  2968750
+                      },
+                      {
+                          "pid":  21484,
+                          "parent":  5392,
+                          "role":  "utility",
+                          "measured":  true,
+                          "workingSetPrivateBytes":  8052736,
+                          "privateCommitBytes":  15556608,
+                          "cpu100ns":  1093750
+                      },
+                      {
+                          "pid":  6124,
+                          "parent":  5392,
+                          "role":  "utility",
+                          "measured":  true,
+                          "workingSetPrivateBytes":  3362816,
+                          "privateCommitBytes":  8134656,
+                          "cpu100ns":  156250
+                      },
+                      {
+                          "pid":  7064,
+                          "parent":  5392,
+                          "role":  "renderer",
+                          "measured":  true,
+                          "workingSetPrivateBytes":  15921152,
+                          "privateCommitBytes":  23756800,
+                          "cpu100ns":  781250
+                      },
+                      {
+                          "pid":  34064,
+                          "parent":  5392,
+                          "role":  "renderer",
+                          "measured":  true,
+                          "workingSetPrivateBytes":  10870784,
+                          "privateCommitBytes":  18092032,
+                          "cpu100ns":  0
+                      }
+                  ]
+}

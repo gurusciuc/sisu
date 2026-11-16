@@ -1,0 +1,34 @@
+{
+  "cycles": 12,
+  "anchorsPreserved": true,
+  "checkpoints": [
+    {
+      "cycles": 0,
+      "processes": 6,
+      "rendererCount": 2,
+      "privateWorkingSetMiB": 125.34375,
+      "privateCommitMiB": 209.8359375
+    },
+    {
+      "cycles": 4,
+      "processes": 6,
+      "rendererCount": 2,
+      "privateWorkingSetMiB": 137.40234375,
+      "privateCommitMiB": 231.1328125
+    },
+    {
+      "cycles": 8,
+      "processes": 6,
+      "rendererCount": 2,
+      "privateWorkingSetMiB": 136.1953125,
+      "privateCommitMiB": 226.8125
+    },
+    {
+      "cycles": 12,
+      "processes": 6,
+      "rendererCount": 2,
+      "privateWorkingSetMiB": 139.9609375,
+      "privateCommitMiB": 229.890625
+    }
+  ]
+}

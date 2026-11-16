@@ -1,0 +1,10 @@
+Desktop Browser
+Copyright 2026 Desktop Browser contributors
+
+Original project code is licensed under the Apache License, Version 2.0.
+The Windows and macOS CEF entry points and Cocoa protocol integration adapt
+the cefsimple example from tauri-apps/cef-rs under its MIT license.
+See notices/cef-rs-MIT.txt, notices/CEF.txt and THIRD_PARTY.md.
+The EasyList authors (https://easylist.to/) maintain EasyList and EasyPrivacy.
+Their data is distributed under CC BY-SA 3.0. The project license applies
+to original code. Upstream code, assets and data carry their own licenses.
