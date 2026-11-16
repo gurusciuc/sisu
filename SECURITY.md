@@ -1,6 +1,6 @@
 # Security reporting and engine maintenance
 
-Use the repository's private vulnerability reporting form for security disclosures. Include the affected build, OS, engine version, observable impact and a minimal controlled reproduction. Remove personal profile data, passwords, browsing history and tokens. [Report a vulnerability privately](https://github.com/gurusciuc/desktop-browser/security/advisories/new)
+Use the repository's private vulnerability reporting form for security disclosures. Include the affected build, OS, engine version, observable impact and a minimal controlled reproduction. Remove personal profile data, passwords, browsing history and tokens. [Report a vulnerability privately](https://github.com/gurusciuc/sisu/security/advisories/new)
 
 For an upstream Chromium or CEF issue, follow the upstream project's disclosure process. [Chromium security](https://www.chromium.org/Home/chromium-security/reporting-security-bugs/) · [CEF project](https://github.com/chromiumembedded/cef)
 

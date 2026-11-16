@@ -1,4 +1,4 @@
-# Desktop Browser
+# Sisu
 
 An open-source desktop browser prototype with a Rust core, the Chromium Embedded Framework (CEF) and native Windows controls. The working Windows preview has real web navigation, live top or left tabs, profile settings, bookmarks and native ad and tracker filtering. Linux and macOS have build definitions and an engine reference shell. Start with the [milestone report](docs/checkpoint.md) for tested features and open release gates.
 

@@ -1,6 +1,6 @@
-# Working on Desktop Browser
+# Working on Sisu
 
-Read this file first, followed by docs/checkpoint.md, docs/architecture.md and docs/plan-alignment.md. The name is provisional. Original code uses Apache-2.0. Preserve NOTICE and third-party licenses.
+Read this file first, followed by docs/checkpoint.md, docs/architecture.md and docs/plan-alignment.md. The project name is Sisu and the repository is https://github.com/gurusciuc/sisu. The current package, executable and profile identifiers still use the original Desktop Browser working name. Original code uses Apache-2.0. Preserve NOTICE and third-party licenses.
 
 ## Product intent
 
