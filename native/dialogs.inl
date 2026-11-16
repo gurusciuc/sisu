@@ -1,7 +1,7 @@
 // Included in the window translation unit to share its native typography and
 // palette.
 struct Preferences {
-  int vertical, width, google, reopen;
+  int vertical, width, google, reopen, light, blocked;
 };
 struct DialogContent {
   int kind;
@@ -51,20 +51,36 @@ INT_PTR CALLBACK dialogProc(HWND h, UINT m, WPARAM w, LPARAM l) {
   if (m == WM_INITDIALOG) {
     data = (DialogContent *)l;
     SetWindowLongPtrW(h, DWLP_USER, l);
-    const wchar_t *title =
-        data->kind == Bookmarks ? L"Bookmarks" : L"Find on page";
+    const wchar_t *title = data->kind == 46          ? L"Import browser data"
+                           : data->kind == Bookmarks ? L"Bookmarks"
+                                                     : L"Find on page";
     SetWindowTextW(h, title);
-    BOOL dark = TRUE;
+    BOOL dark = !lightMode;
     DwmSetWindowAttribute(h, 20, &dark, sizeof(dark));
     DwmSetWindowAttribute(h, 35, &paper, sizeof(paper));
     DwmSetWindowAttribute(h, 36, &ink, sizeof(ink));
     RECT owner;
     GetWindowRect(window, &owner);
-    int width = px(436), height = px(data->kind == Bookmarks ? 388 : 185);
+    int width = px(436), height = px(data->kind == 46          ? 420
+                                     : data->kind == Bookmarks ? 388
+                                                               : 185);
     SetWindowPos(h, nullptr, (owner.left + owner.right - width) / 2,
                  (owner.top + owner.bottom - height) / 2, width, height,
                  SWP_NOZORDER);
-    if (data->kind == Bookmarks) {
+    if (data->kind == 46) {
+      heading(h, L"Choose what to import", 18);
+      dialogButton(h, L"Bookmarks · HTML export", PickImport, 24, 58, 366);
+      dialogButton(h, L"Cookies · JSON export", 281, 24, 101, 366);
+      dialogButton(h, L"Browser import tools", 282, 24, 144, 366);
+      dialogButton(h, L"Password import tools", 283, 24, 187, 366);
+      dialogControl(
+          h, L"STATIC",
+          L"Cookie files contain login sessions. Existing matching cookies are "
+          L"replaced. Encrypted browser databases and partitioned-cookie "
+          L"imports need separate migration support.",
+          0, SS_LEFT, 24, 240, 366, 65);
+      dialogButton(h, L"Cancel", IDCANCEL, 288, 325, 102);
+    } else if (data->kind == Bookmarks) {
       heading(h, data->count ? L"Saved pages" : L"No saved pages yet", 18);
       auto list = dialogControl(h, L"LISTBOX", L"Saved pages", LibraryList,
                                 WS_TABSTOP | WS_VSCROLL | LBS_NOTIFY |
@@ -113,7 +129,7 @@ INT_PTR CALLBACK dialogProc(HWND h, UINT m, WPARAM w, LPARAM l) {
     bool selected = false;
     bool primary = id == IDOK;
     colorRect(dc, r, paper);
-    rounded(dc, r, primary ? ink : (selected ? RGB(59, 60, 65) : active),
+    rounded(dc, r, primary ? ink : (selected ? hoverFill : active),
             selected ? muted : line, 12);
     wchar_t label[96]{};
     GetWindowTextW(d->hwndItem, label, 96);
@@ -128,6 +144,11 @@ INT_PTR CALLBACK dialogProc(HWND h, UINT m, WPARAM w, LPARAM l) {
   }
   case WM_COMMAND: {
     int id = LOWORD(w);
+    if (data->kind == 46 &&
+        (id == PickImport || id == 281 || id == 282 || id == 283)) {
+      EndDialog(h, id == PickImport ? 1 : id == 281 ? 2 : id == 282 ? 3 : 4);
+      return TRUE;
+    }
     if (id == IDCANCEL) {
       EndDialog(h, 0);
       return TRUE;
@@ -183,14 +204,22 @@ extern "C" int shell_find(wchar_t *dest) {
   wcscpy_s(dest, 513, data.query.c_str());
   return 1;
 }
-extern "C" bool shell_pick_file(wchar_t *dest, int count) {
+extern "C" int shell_import_kind() {
+  DialogContent data{46};
+  return showDialog(data);
+}
+extern "C" bool shell_pick_file(wchar_t *dest, int count, int kind) {
   OPENFILENAMEW dlg{sizeof(dlg)};
   dlg.hwndOwner = GetActiveWindow();
   dlg.lpstrFile = dest;
   dlg.nMaxFile = count;
   dlg.lpstrTitle =
-      L"Import a bookmarks HTML export from Brave, Chrome, or Firefox";
-  dlg.lpstrFilter = L"Bookmarks HTML (*.html; *.htm)\0*.html;*.htm\0\0";
+      kind == 1
+          ? L"Import cookies from a JSON export"
+          : L"Import a bookmarks HTML export from Brave, Chrome, or Firefox";
+  dlg.lpstrFilter = kind == 1
+                        ? L"Cookies JSON (*.json)\0*.json\0\0"
+                        : L"Bookmarks HTML (*.html; *.htm)\0*.html;*.htm\0\0";
   dlg.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR;
   return GetOpenFileNameW(&dlg) != 0;
 }

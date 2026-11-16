@@ -1,0 +1,74 @@
+{
+  "date": "2026-11-16T17:56:02.410Z",
+  "compiler": "release",
+  "engine": "156.0.30+g6028375",
+  "chromium": "156.0.8078.96",
+  "os": "10.0.22631",
+  "architecture": "x64",
+  "cpu": "AMD Ryzen 5 5600 6-Core Processor              ",
+  "logicalCPUs": 12,
+  "ramBytes": 34275717120,
+  "profile": "new, warm only within this run",
+  "tabs": 2,
+  "layout": "top",
+  "blocking": "native, both bundled lists",
+  "extensions": [],
+  "discard": "no shell-initiated discards",
+  "startToFirstFixtureReportMs": 1005,
+  "states": [
+    {
+      "run": "tab-article",
+      "documentId": "4a66cd20-d1d1-4ff7-8807-618f759a6651",
+      "prior": "empty",
+      "cookieBefore": "",
+      "draft": "Unsubmitted note 4a66cd20-d1d1-4ff7-8807-618f759a6651",
+      "control": "true",
+      "hidden": "true",
+      "width": "1120",
+      "height": "681",
+      "scale": "1",
+      "extension": "",
+      "isolated": "true",
+      "visibility": "visible",
+      "topology": "",
+      "firstPaint": "384"
+    },
+    {
+      "run": "tab-document",
+      "documentId": "ffda412f-08ab-483b-9e46-2c0afbc8e372",
+      "prior": "tab-article",
+      "cookieBefore": "fixture=tab-article",
+      "draft": "Unsubmitted note ffda412f-08ab-483b-9e46-2c0afbc8e372",
+      "control": "true",
+      "hidden": "true",
+      "width": "1120",
+      "height": "681",
+      "scale": "1",
+      "extension": "",
+      "isolated": "true",
+      "visibility": "visible",
+      "topology": "",
+      "firstPaint": "60"
+    }
+  ],
+  "privateWorkingSet": {
+    "medianMiB": 156.2890625,
+    "peakSampledMiB": 156.8671875
+  },
+  "privateCommit": {
+    "medianMiB": 261.2265625,
+    "peakSampledMiB": 261.9453125
+  },
+  "samplerMs": [
+    1849,
+    432,
+    440,
+    444,
+    435,
+    434,
+    454,
+    438,
+    432,
+    433
+  ]
+}

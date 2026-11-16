@@ -1,0 +1,802 @@
+[
+    {
+        "sample":  0,
+        "atMs":  1,
+        "samplingMs":  1849,
+        "attempts":  1,
+        "processes":  [
+                          {
+                              "pid":  6060,
+                              "parent":  31960,
+                              "role":  "browser",
+                              "measured":  true,
+                              "workingSetPrivateBytes":  52076544,
+                              "privateCommitBytes":  61886464,
+                              "cpu100ns":  12187500
+                          },
+                          {
+                              "pid":  47128,
+                              "parent":  6060,
+                              "role":  "gpu-process",
+                              "measured":  true,
+                              "workingSetPrivateBytes":  51556352,
+                              "privateCommitBytes":  103264256,
+                              "cpu100ns":  2343750
+                          },
+                          {
+                              "pid":  47364,
+                              "parent":  6060,
+                              "role":  "utility",
+                              "measured":  true,
+                              "workingSetPrivateBytes":  8097792,
+                              "privateCommitBytes":  15687680,
+                              "cpu100ns":  937500
+                          },
+                          {
+                              "pid":  29712,
+                              "parent":  6060,
+                              "role":  "utility",
+                              "measured":  true,
+                              "workingSetPrivateBytes":  3268608,
+                              "privateCommitBytes":  8056832,
+                              "cpu100ns":  312500
+                          },
+                          {
+                              "pid":  32616,
+                              "parent":  6060,
+                              "role":  "renderer",
+                              "measured":  true,
+                              "workingSetPrivateBytes":  16433152,
+                              "privateCommitBytes":  25919488,
+                              "cpu100ns":  625000
+                          },
+                          {
+                              "pid":  42848,
+                              "parent":  6060,
+                              "role":  "renderer",
+                              "measured":  true,
+                              "workingSetPrivateBytes":  11558912,
+                              "privateCommitBytes":  22315008,
+                              "cpu100ns":  625000
+                          },
+                          {
+                              "pid":  46848,
+                              "parent":  6060,
+                              "role":  "renderer",
+                              "measured":  true,
+                              "workingSetPrivateBytes":  13426688,
+                              "privateCommitBytes":  22249472,
+                              "cpu100ns":  0
+                          },
+                          {
+                              "pid":  17816,
+                              "parent":  6060,
+                              "role":  "renderer",
+                              "measured":  true,
+                              "workingSetPrivateBytes":  8069120,
+                              "privateCommitBytes":  15290368,
+                              "cpu100ns":  0
+                          }
+                      ]
+    },
+    {
+        "sample":  1,
+        "atMs":  2855,
+        "samplingMs":  432,
+        "attempts":  1,
+        "processes":  [
+                          {
+                              "pid":  6060,
+                              "parent":  31960,
+                              "role":  "browser",
+                              "measured":  true,
+                              "workingSetPrivateBytes":  52076544,
+                              "privateCommitBytes":  61886464,
+                              "cpu100ns":  12187500
+                          },
+                          {
+                              "pid":  47128,
+                              "parent":  6060,
+                              "role":  "gpu-process",
+                              "measured":  true,
+                              "workingSetPrivateBytes":  51556352,
+                              "privateCommitBytes":  103264256,
+                              "cpu100ns":  2343750
+                          },
+                          {
+                              "pid":  47364,
+                              "parent":  6060,
+                              "role":  "utility",
+                              "measured":  true,
+                              "workingSetPrivateBytes":  8101888,
+                              "privateCommitBytes":  15691776,
+                              "cpu100ns":  937500
+                          },
+                          {
+                              "pid":  29712,
+                              "parent":  6060,
+                              "role":  "utility",
+                              "measured":  true,
+                              "workingSetPrivateBytes":  3268608,
+                              "privateCommitBytes":  8056832,
+                              "cpu100ns":  312500
+                          },
+                          {
+                              "pid":  32616,
+                              "parent":  6060,
+                              "role":  "renderer",
+                              "measured":  true,
+                              "workingSetPrivateBytes":  16433152,
+                              "privateCommitBytes":  25919488,
+                              "cpu100ns":  625000
+                          },
+                          {
+                              "pid":  42848,
+                              "parent":  6060,
+                              "role":  "renderer",
+                              "measured":  true,
+                              "workingSetPrivateBytes":  11571200,
+                              "privateCommitBytes":  22327296,
+                              "cpu100ns":  625000
+                          },
+                          {
+                              "pid":  46848,
+                              "parent":  6060,
+                              "role":  "renderer",
+                              "measured":  true,
+                              "workingSetPrivateBytes":  13004800,
+                              "privateCommitBytes":  21716992,
+                              "cpu100ns":  0
+                          },
+                          {
+                              "pid":  17816,
+                              "parent":  6060,
+                              "role":  "renderer",
+                              "measured":  true,
+                              "workingSetPrivateBytes":  8069120,
+                              "privateCommitBytes":  15290368,
+                              "cpu100ns":  0
+                          }
+                      ]
+    },
+    {
+        "sample":  2,
+        "atMs":  4303,
+        "samplingMs":  440,
+        "attempts":  1,
+        "processes":  [
+                          {
+                              "pid":  6060,
+                              "parent":  31960,
+                              "role":  "browser",
+                              "measured":  true,
+                              "workingSetPrivateBytes":  52076544,
+                              "privateCommitBytes":  61886464,
+                              "cpu100ns":  12187500
+                          },
+                          {
+                              "pid":  47128,
+                              "parent":  6060,
+                              "role":  "gpu-process",
+                              "measured":  true,
+                              "workingSetPrivateBytes":  51560448,
+                              "privateCommitBytes":  103268352,
+                              "cpu100ns":  2343750
+                          },
+                          {
+                              "pid":  47364,
+                              "parent":  6060,
+                              "role":  "utility",
+                              "measured":  true,
+                              "workingSetPrivateBytes":  8105984,
+                              "privateCommitBytes":  15695872,
+                              "cpu100ns":  937500
+                          },
+                          {
+                              "pid":  29712,
+                              "parent":  6060,
+                              "role":  "utility",
+                              "measured":  true,
+                              "workingSetPrivateBytes":  3268608,
+                              "privateCommitBytes":  8056832,
+                              "cpu100ns":  312500
+                          },
+                          {
+                              "pid":  32616,
+                              "parent":  6060,
+                              "role":  "renderer",
+                              "measured":  true,
+                              "workingSetPrivateBytes":  16433152,
+                              "privateCommitBytes":  25919488,
+                              "cpu100ns":  625000
+                          },
+                          {
+                              "pid":  42848,
+                              "parent":  6060,
+                              "role":  "renderer",
+                              "measured":  true,
+                              "workingSetPrivateBytes":  11579392,
+                              "privateCommitBytes":  22335488,
+                              "cpu100ns":  625000
+                          },
+                          {
+                              "pid":  46848,
+                              "parent":  6060,
+                              "role":  "renderer",
+                              "measured":  true,
+                              "workingSetPrivateBytes":  13008896,
+                              "privateCommitBytes":  21721088,
+                              "cpu100ns":  0
+                          },
+                          {
+                              "pid":  17816,
+                              "parent":  6060,
+                              "role":  "renderer",
+                              "measured":  true,
+                              "workingSetPrivateBytes":  7806976,
+                              "privateCommitBytes":  14995456,
+                              "cpu100ns":  0
+                          }
+                      ]
+    },
+    {
+        "sample":  3,
+        "atMs":  5754,
+        "samplingMs":  444,
+        "attempts":  1,
+        "processes":  [
+                          {
+                              "pid":  6060,
+                              "parent":  31960,
+                              "role":  "browser",
+                              "measured":  true,
+                              "workingSetPrivateBytes":  52076544,
+                              "privateCommitBytes":  61886464,
+                              "cpu100ns":  12187500
+                          },
+                          {
+                              "pid":  47128,
+                              "parent":  6060,
+                              "role":  "gpu-process",
+                              "measured":  true,
+                              "workingSetPrivateBytes":  51564544,
+                              "privateCommitBytes":  103272448,
+                              "cpu100ns":  2343750
+                          },
+                          {
+                              "pid":  47364,
+                              "parent":  6060,
+                              "role":  "utility",
+                              "measured":  true,
+                              "workingSetPrivateBytes":  8105984,
+                              "privateCommitBytes":  15695872,
+                              "cpu100ns":  937500
+                          },
+                          {
+                              "pid":  29712,
+                              "parent":  6060,
+                              "role":  "utility",
+                              "measured":  true,
+                              "workingSetPrivateBytes":  3268608,
+                              "privateCommitBytes":  8056832,
+                              "cpu100ns":  312500
+                          },
+                          {
+                              "pid":  32616,
+                              "parent":  6060,
+                              "role":  "renderer",
+                              "measured":  true,
+                              "workingSetPrivateBytes":  16433152,
+                              "privateCommitBytes":  25919488,
+                              "cpu100ns":  625000
+                          },
+                          {
+                              "pid":  42848,
+                              "parent":  6060,
+                              "role":  "renderer",
+                              "measured":  true,
+                              "workingSetPrivateBytes":  11583488,
+                              "privateCommitBytes":  22339584,
+                              "cpu100ns":  625000
+                          },
+                          {
+                              "pid":  46848,
+                              "parent":  6060,
+                              "role":  "renderer",
+                              "measured":  true,
+                              "workingSetPrivateBytes":  13008896,
+                              "privateCommitBytes":  21721088,
+                              "cpu100ns":  0
+                          },
+                          {
+                              "pid":  17816,
+                              "parent":  6060,
+                              "role":  "renderer",
+                              "measured":  true,
+                              "workingSetPrivateBytes":  7806976,
+                              "privateCommitBytes":  14995456,
+                              "cpu100ns":  0
+                          }
+                      ]
+    },
+    {
+        "sample":  4,
+        "atMs":  7211,
+        "samplingMs":  435,
+        "attempts":  1,
+        "processes":  [
+                          {
+                              "pid":  6060,
+                              "parent":  31960,
+                              "role":  "browser",
+                              "measured":  true,
+                              "workingSetPrivateBytes":  52080640,
+                              "privateCommitBytes":  61886464,
+                              "cpu100ns":  12187500
+                          },
+                          {
+                              "pid":  47128,
+                              "parent":  6060,
+                              "role":  "gpu-process",
+                              "measured":  true,
+                              "workingSetPrivateBytes":  51568640,
+                              "privateCommitBytes":  103276544,
+                              "cpu100ns":  2343750
+                          },
+                          {
+                              "pid":  47364,
+                              "parent":  6060,
+                              "role":  "utility",
+                              "measured":  true,
+                              "workingSetPrivateBytes":  8105984,
+                              "privateCommitBytes":  15695872,
+                              "cpu100ns":  937500
+                          },
+                          {
+                              "pid":  29712,
+                              "parent":  6060,
+                              "role":  "utility",
+                              "measured":  true,
+                              "workingSetPrivateBytes":  3268608,
+                              "privateCommitBytes":  8056832,
+                              "cpu100ns":  312500
+                          },
+                          {
+                              "pid":  32616,
+                              "parent":  6060,
+                              "role":  "renderer",
+                              "measured":  true,
+                              "workingSetPrivateBytes":  16433152,
+                              "privateCommitBytes":  25919488,
+                              "cpu100ns":  625000
+                          },
+                          {
+                              "pid":  42848,
+                              "parent":  6060,
+                              "role":  "renderer",
+                              "measured":  true,
+                              "workingSetPrivateBytes":  11583488,
+                              "privateCommitBytes":  22339584,
+                              "cpu100ns":  625000
+                          },
+                          {
+                              "pid":  46848,
+                              "parent":  6060,
+                              "role":  "renderer",
+                              "measured":  true,
+                              "workingSetPrivateBytes":  13008896,
+                              "privateCommitBytes":  21721088,
+                              "cpu100ns":  0
+                          },
+                          {
+                              "pid":  17816,
+                              "parent":  6060,
+                              "role":  "renderer",
+                              "measured":  true,
+                              "workingSetPrivateBytes":  7806976,
+                              "privateCommitBytes":  14995456,
+                              "cpu100ns":  0
+                          }
+                      ]
+    },
+    {
+        "sample":  5,
+        "atMs":  8651,
+        "samplingMs":  434,
+        "attempts":  1,
+        "processes":  [
+                          {
+                              "pid":  6060,
+                              "parent":  31960,
+                              "role":  "browser",
+                              "measured":  true,
+                              "workingSetPrivateBytes":  52080640,
+                              "privateCommitBytes":  61886464,
+                              "cpu100ns":  12187500
+                          },
+                          {
+                              "pid":  47128,
+                              "parent":  6060,
+                              "role":  "gpu-process",
+                              "measured":  true,
+                              "workingSetPrivateBytes":  51572736,
+                              "privateCommitBytes":  103280640,
+                              "cpu100ns":  2343750
+                          },
+                          {
+                              "pid":  47364,
+                              "parent":  6060,
+                              "role":  "utility",
+                              "measured":  true,
+                              "workingSetPrivateBytes":  8110080,
+                              "privateCommitBytes":  15699968,
+                              "cpu100ns":  937500
+                          },
+                          {
+                              "pid":  29712,
+                              "parent":  6060,
+                              "role":  "utility",
+                              "measured":  true,
+                              "workingSetPrivateBytes":  3268608,
+                              "privateCommitBytes":  8056832,
+                              "cpu100ns":  312500
+                          },
+                          {
+                              "pid":  32616,
+                              "parent":  6060,
+                              "role":  "renderer",
+                              "measured":  true,
+                              "workingSetPrivateBytes":  16433152,
+                              "privateCommitBytes":  25919488,
+                              "cpu100ns":  625000
+                          },
+                          {
+                              "pid":  42848,
+                              "parent":  6060,
+                              "role":  "renderer",
+                              "measured":  true,
+                              "workingSetPrivateBytes":  11587584,
+                              "privateCommitBytes":  22343680,
+                              "cpu100ns":  625000
+                          },
+                          {
+                              "pid":  46848,
+                              "parent":  6060,
+                              "role":  "renderer",
+                              "measured":  true,
+                              "workingSetPrivateBytes":  13008896,
+                              "privateCommitBytes":  21721088,
+                              "cpu100ns":  0
+                          },
+                          {
+                              "pid":  17816,
+                              "parent":  6060,
+                              "role":  "renderer",
+                              "measured":  true,
+                              "workingSetPrivateBytes":  7806976,
+                              "privateCommitBytes":  14995456,
+                              "cpu100ns":  0
+                          }
+                      ]
+    },
+    {
+        "sample":  6,
+        "atMs":  10099,
+        "samplingMs":  454,
+        "attempts":  1,
+        "processes":  [
+                          {
+                              "pid":  6060,
+                              "parent":  31960,
+                              "role":  "browser",
+                              "measured":  true,
+                              "workingSetPrivateBytes":  52080640,
+                              "privateCommitBytes":  61886464,
+                              "cpu100ns":  12187500
+                          },
+                          {
+                              "pid":  47128,
+                              "parent":  6060,
+                              "role":  "gpu-process",
+                              "measured":  true,
+                              "workingSetPrivateBytes":  51576832,
+                              "privateCommitBytes":  103284736,
+                              "cpu100ns":  2343750
+                          },
+                          {
+                              "pid":  47364,
+                              "parent":  6060,
+                              "role":  "utility",
+                              "measured":  true,
+                              "workingSetPrivateBytes":  8110080,
+                              "privateCommitBytes":  15699968,
+                              "cpu100ns":  937500
+                          },
+                          {
+                              "pid":  29712,
+                              "parent":  6060,
+                              "role":  "utility",
+                              "measured":  true,
+                              "workingSetPrivateBytes":  3268608,
+                              "privateCommitBytes":  8056832,
+                              "cpu100ns":  312500
+                          },
+                          {
+                              "pid":  32616,
+                              "parent":  6060,
+                              "role":  "renderer",
+                              "measured":  true,
+                              "workingSetPrivateBytes":  16433152,
+                              "privateCommitBytes":  25919488,
+                              "cpu100ns":  625000
+                          },
+                          {
+                              "pid":  42848,
+                              "parent":  6060,
+                              "role":  "renderer",
+                              "measured":  true,
+                              "workingSetPrivateBytes":  11591680,
+                              "privateCommitBytes":  22347776,
+                              "cpu100ns":  625000
+                          },
+                          {
+                              "pid":  46848,
+                              "parent":  6060,
+                              "role":  "renderer",
+                              "measured":  true,
+                              "workingSetPrivateBytes":  13008896,
+                              "privateCommitBytes":  21721088,
+                              "cpu100ns":  0
+                          },
+                          {
+                              "pid":  17816,
+                              "parent":  6060,
+                              "role":  "renderer",
+                              "measured":  true,
+                              "workingSetPrivateBytes":  7806976,
+                              "privateCommitBytes":  14995456,
+                              "cpu100ns":  0
+                          }
+                      ]
+    },
+    {
+        "sample":  7,
+        "atMs":  11556,
+        "samplingMs":  438,
+        "attempts":  1,
+        "processes":  [
+                          {
+                              "pid":  6060,
+                              "parent":  31960,
+                              "role":  "browser",
+                              "measured":  true,
+                              "workingSetPrivateBytes":  52080640,
+                              "privateCommitBytes":  61886464,
+                              "cpu100ns":  12187500
+                          },
+                          {
+                              "pid":  47128,
+                              "parent":  6060,
+                              "role":  "gpu-process",
+                              "measured":  true,
+                              "workingSetPrivateBytes":  51580928,
+                              "privateCommitBytes":  103288832,
+                              "cpu100ns":  2343750
+                          },
+                          {
+                              "pid":  47364,
+                              "parent":  6060,
+                              "role":  "utility",
+                              "measured":  true,
+                              "workingSetPrivateBytes":  8110080,
+                              "privateCommitBytes":  15699968,
+                              "cpu100ns":  937500
+                          },
+                          {
+                              "pid":  29712,
+                              "parent":  6060,
+                              "role":  "utility",
+                              "measured":  true,
+                              "workingSetPrivateBytes":  3268608,
+                              "privateCommitBytes":  8056832,
+                              "cpu100ns":  312500
+                          },
+                          {
+                              "pid":  32616,
+                              "parent":  6060,
+                              "role":  "renderer",
+                              "measured":  true,
+                              "workingSetPrivateBytes":  16433152,
+                              "privateCommitBytes":  25919488,
+                              "cpu100ns":  625000
+                          },
+                          {
+                              "pid":  42848,
+                              "parent":  6060,
+                              "role":  "renderer",
+                              "measured":  true,
+                              "workingSetPrivateBytes":  11595776,
+                              "privateCommitBytes":  22351872,
+                              "cpu100ns":  625000
+                          },
+                          {
+                              "pid":  46848,
+                              "parent":  6060,
+                              "role":  "renderer",
+                              "measured":  true,
+                              "workingSetPrivateBytes":  13008896,
+                              "privateCommitBytes":  21721088,
+                              "cpu100ns":  0
+                          },
+                          {
+                              "pid":  17816,
+                              "parent":  6060,
+                              "role":  "renderer",
+                              "measured":  true,
+                              "workingSetPrivateBytes":  7806976,
+                              "privateCommitBytes":  14995456,
+                              "cpu100ns":  0
+                          }
+                      ]
+    },
+    {
+        "sample":  8,
+        "atMs":  13001,
+        "samplingMs":  432,
+        "attempts":  1,
+        "processes":  [
+                          {
+                              "pid":  6060,
+                              "parent":  31960,
+                              "role":  "browser",
+                              "measured":  true,
+                              "workingSetPrivateBytes":  52080640,
+                              "privateCommitBytes":  61886464,
+                              "cpu100ns":  12187500
+                          },
+                          {
+                              "pid":  47128,
+                              "parent":  6060,
+                              "role":  "gpu-process",
+                              "measured":  true,
+                              "workingSetPrivateBytes":  51580928,
+                              "privateCommitBytes":  103288832,
+                              "cpu100ns":  2343750
+                          },
+                          {
+                              "pid":  47364,
+                              "parent":  6060,
+                              "role":  "utility",
+                              "measured":  true,
+                              "workingSetPrivateBytes":  8110080,
+                              "privateCommitBytes":  15699968,
+                              "cpu100ns":  937500
+                          },
+                          {
+                              "pid":  29712,
+                              "parent":  6060,
+                              "role":  "utility",
+                              "measured":  true,
+                              "workingSetPrivateBytes":  3268608,
+                              "privateCommitBytes":  8056832,
+                              "cpu100ns":  312500
+                          },
+                          {
+                              "pid":  32616,
+                              "parent":  6060,
+                              "role":  "renderer",
+                              "measured":  true,
+                              "workingSetPrivateBytes":  16433152,
+                              "privateCommitBytes":  25919488,
+                              "cpu100ns":  625000
+                          },
+                          {
+                              "pid":  42848,
+                              "parent":  6060,
+                              "role":  "renderer",
+                              "measured":  true,
+                              "workingSetPrivateBytes":  11599872,
+                              "privateCommitBytes":  22355968,
+                              "cpu100ns":  625000
+                          },
+                          {
+                              "pid":  46848,
+                              "parent":  6060,
+                              "role":  "renderer",
+                              "measured":  true,
+                              "workingSetPrivateBytes":  13008896,
+                              "privateCommitBytes":  21721088,
+                              "cpu100ns":  0
+                          },
+                          {
+                              "pid":  17816,
+                              "parent":  6060,
+                              "role":  "renderer",
+                              "measured":  true,
+                              "workingSetPrivateBytes":  7806976,
+                              "privateCommitBytes":  14995456,
+                              "cpu100ns":  0
+                          }
+                      ]
+    },
+    {
+        "sample":  9,
+        "atMs":  14437,
+        "samplingMs":  433,
+        "attempts":  1,
+        "processes":  [
+                          {
+                              "pid":  6060,
+                              "parent":  31960,
+                              "role":  "browser",
+                              "measured":  true,
+                              "workingSetPrivateBytes":  52080640,
+                              "privateCommitBytes":  61886464,
+                              "cpu100ns":  12187500
+                          },
+                          {
+                              "pid":  47128,
+                              "parent":  6060,
+                              "role":  "gpu-process",
+                              "measured":  true,
+                              "workingSetPrivateBytes":  51585024,
+                              "privateCommitBytes":  103292928,
+                              "cpu100ns":  2343750
+                          },
+                          {
+                              "pid":  47364,
+                              "parent":  6060,
+                              "role":  "utility",
+                              "measured":  true,
+                              "workingSetPrivateBytes":  8110080,
+                              "privateCommitBytes":  15699968,
+                              "cpu100ns":  937500
+                          },
+                          {
+                              "pid":  29712,
+                              "parent":  6060,
+                              "role":  "utility",
+                              "measured":  true,
+                              "workingSetPrivateBytes":  3268608,
+                              "privateCommitBytes":  8056832,
+                              "cpu100ns":  312500
+                          },
+                          {
+                              "pid":  32616,
+                              "parent":  6060,
+                              "role":  "renderer",
+                              "measured":  true,
+                              "workingSetPrivateBytes":  16433152,
+                              "privateCommitBytes":  25919488,
+                              "cpu100ns":  625000
+                          },
+                          {
+                              "pid":  42848,
+                              "parent":  6060,
+                              "role":  "renderer",
+                              "measured":  true,
+                              "workingSetPrivateBytes":  11603968,
+                              "privateCommitBytes":  22360064,
+                              "cpu100ns":  625000
+                          },
+                          {
+                              "pid":  46848,
+                              "parent":  6060,
+                              "role":  "renderer",
+                              "measured":  true,
+                              "workingSetPrivateBytes":  13008896,
+                              "privateCommitBytes":  21721088,
+                              "cpu100ns":  0
+                          },
+                          {
+                              "pid":  17816,
+                              "parent":  6060,
+                              "role":  "renderer",
+                              "measured":  true,
+                              "workingSetPrivateBytes":  7806976,
+                              "privateCommitBytes":  14995456,
+                              "cpu100ns":  0
+                          }
+                      ]
+    }
+]

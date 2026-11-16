@@ -101,7 +101,7 @@ pub(super) fn action(command: i32, s: &Session, b: Option<&Browser>) -> Result<(
         }
         22 => {
             let mut buf = vec![0u16; 32768];
-            if !unsafe { shell_pick_file(buf.as_mut_ptr(), buf.len() as i32) } {
+            if !unsafe { shell_pick_file(buf.as_mut_ptr(), buf.len() as i32, 0) } {
                 return Ok(());
             }
             let file = PathBuf::from(OsString::from_wide(

@@ -6,7 +6,7 @@ Read this file first, followed by docs/checkpoint.md, docs/architecture.md and d
 
 Build an everyday desktop browser with the lowest practical measured memory use while preserving website compatibility, security, privacy, input correctness and active user work. Rust owns core state and application policy. The first product uses one mature engine. A custom Rust renderer is a separate research track.
 
-The default layout has horizontal tabs at the top. Left tabs share the same model and live views. Keep the placement design extensible to right and bottom. Switching layout must preserve order, selection, navigation and drafts. The visual direction is restrained, premium and familiar, with Helvetica/Arial-family text and conventional icons. The user's gurusciuc.vercel.app reference informed the current dark palette. Ardia and ArtCraft are references for a future marketing site.
+The default layout has horizontal tabs at the top. Left tabs share the same model and live views. Keep the placement design extensible to right and bottom. Switching layout must preserve order, selection, navigation and drafts. The latest visual direction is monochrome black and white with neutral OKLCH lightness in 5% steps, clean Helvetica/Arial-family text and conventional geometric icons. The Heron example on Details informs restraint, fine outlines and spacing. This replaces the earlier sage palette. Ardia and ArtCraft are references for a future marketing site.
 
 ## Implementation map
 
@@ -30,7 +30,7 @@ Real uBOL DNR filtering was tested. Proton Pass reached signed-out onboarding in
 
 Use rust-toolchain.toml and Cargo.lock. On Windows, install MSVC C++ desktop tools and Windows SDK, CMake and Ninja. Keep the CEF build root short. Run tools/build-windows.ps1 -BuildRoot C:/db-build. Launch the staged desktop_browser.exe sandbox bootstrap with all its adjacent runtime files. Never launch the library directly.
 
-Run cargo fmt --all -- --check and cargo test --release --locked --no-default-features --test policy --test import. Then run the README's smoke, settings, capability and transition checks through the staged browser. Use Node 22+ and Windows PowerShell for these scripts. Keep test profiles separate with BROWSER_TEST_HOME. Repeat memory measurements with release builds and equivalent live workloads.
+Run cargo fmt --all -- --check and cargo test --release --locked --no-default-features --test policy --test import --test cookies. Then run the README's smoke, settings, capability and transition checks through the staged browser. Use Node 22+ and Windows PowerShell for these scripts. Keep test profiles separate with BROWSER_TEST_HOME. Repeat memory measurements with release builds and equivalent live workloads.
 
 The recorded two-tab baseline is 138.56 MiB median private working set and 226.93 MiB median private commit over the full Windows process tree. Shared pages and external GPU memory are excluded. These figures are a baseline, never a claim of universal superiority.
 
@@ -50,6 +50,8 @@ The user observed approximately equal memory to Chrome with substantially fewer 
 - Do not publish binaries as production-ready or use an AI fixture as proof a commercial extension works.
 
 ## Open priorities
+
+The user requested a checkpoint and continuation prompt. Read docs/continue-tomorrow.md before further changes. Source for themes, broader settings, middle-click close, rounded menus and JSON cookie import is committed but not fully accepted. The final hover regression still fails on rapid caption-button handoff. The Settings and foreground tab-paint checks pass. Six release Rust tests and the Windows release library build pass. The logo PNG is a draft, not integrated. The newer follow-up baseline is 156.29 MiB private working set / 261.23 MiB private commit and predates the latest feature changes. No installer was built. Do not claim these unfinished items are validated.
 
 Consult docs/plan-alignment.md for the section-by-section audit. Resolve extension tab topology first, then complete safe session/crash recovery and cross-platform shell acceptance. Partitioning, fingerprint policy, DNS/proxy/WebRTC, background egress, generic cosmetics, verified list updates, accessibility, IME and real-site workflows remain release gates. Source publication and installable signed releases are separate milestones.
 

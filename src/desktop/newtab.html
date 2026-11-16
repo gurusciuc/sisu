@@ -1,13 +1,18 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; form-action https://duckduckgo.com">
 <title>New tab</title><style>
-*{box-sizing:border-box}html{color-scheme:dark;background:#101113;color:#f1f2ee;font:15px Arial,sans-serif}
-body{margin:0;min-height:100vh;display:grid;place-items:center;background:radial-gradient(ellipse at 50% 42%,#1b2521 0,transparent 58%)}
-main{width:min(39rem,84vw);margin-bottom:8vh}h1{font-size:clamp(62px,9vw,88px);font-weight:400;line-height:1;letter-spacing:-.065em;margin:0 0 38px;text-align:center}
-h1 span{color:#a6c3ad}form{display:flex;background:#202623;border:1px solid #46524b;border-radius:16px;padding:7px;box-shadow:0 14px 48px #0002}
-form:focus-within{outline:2px solid #afcbb6;outline-offset:3px}
-input{padding:13px 16px;flex:1;min-width:0;border:0;font:inherit;background:transparent;color:inherit;outline:0}input::placeholder{color:#a5afa9}
-button{font:400 14px Arial,sans-serif;color:#18241c;background:#c2d6c6;border:0;border-radius:10px;padding:0 19px;cursor:pointer}
-</style></head><body><main><h1>si<span>s</span>u</h1><form action="https://duckduckgo.com/" method="get">
+*{box-sizing:border-box}html{color-scheme:dark;--surface:oklch(15% 0 0);--field:oklch(20% 0 0);--line:oklch(40% 0 0);--ink:oklch(95% 0 0);--muted:oklch(70% 0 0);background:var(--surface);color:var(--ink);font:15px Arial,sans-serif}
+body{margin:0;min-height:100vh;display:grid;place-items:center}
+main{width:min(39rem,84vw);margin-bottom:8vh}
+h1{font-size:clamp(62px,9vw,88px);font-weight:500;line-height:1;letter-spacing:-.065em;margin:0 0 38px;text-align:center}
+form{display:flex;background:var(--field);border:1px solid var(--line);border-radius:12px;padding:6px}
+form:focus-within{outline:2px solid var(--ink);outline-offset:3px}
+input{padding:13px 16px;flex:1;min-width:0;border:0;font:inherit;background:transparent;color:inherit;outline:0}
+input::placeholder{color:var(--muted)}
+button{font:400 14px Arial,sans-serif;color:var(--surface);background:var(--ink);border:0;border-radius:6px;padding:0 19px;cursor:pointer}
+button:active{transform:scale(.97)}
+@media(prefers-color-scheme:light){html{color-scheme:light;--surface:oklch(100% 0 0);--field:oklch(100% 0 0);--line:oklch(80% 0 0);--ink:oklch(10% 0 0);--muted:oklch(50% 0 0)}}
+@media(prefers-reduced-motion:reduce){button:active{transform:none}}
+</style></head><body><main><h1>sisu</h1><form action="https://duckduckgo.com/" method="get">
 <input name="q" placeholder="Search with DuckDuckGo" aria-label="Search with DuckDuckGo" required autocomplete="off"><button>Search</button>
 </form></main></body></html>

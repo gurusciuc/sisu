@@ -1,3 +1,4 @@
+mod cookie_import;
 mod library;
 use super::*;
 use std::{
@@ -8,7 +9,13 @@ use std::{
 };
 
 unsafe extern "C" {
-    fn shell_open(vertical: bool, width: i32, private: bool, extension: bool) -> *mut c_void;
+    fn shell_open(
+        vertical: bool,
+        width: i32,
+        private: bool,
+        extension: bool,
+        light: bool,
+    ) -> *mut c_void;
     fn shell_add(id: i32, page: *mut c_void, local_home: bool);
     fn shell_ready(id: i32);
     fn shell_remove(id: i32);
@@ -21,10 +28,12 @@ unsafe extern "C" {
     fn shell_sync_settings(id: i32, visible: bool, prefs: NativePrefs);
     fn shell_focus_settings(id: i32);
     fn shell_width(width: i32);
+    fn shell_set_theme(light: bool);
     fn shell_suggestions(query: *const u16, rows: *const *const u16, count: i32);
     fn shell_library(rows: *const *const u16, count: i32, selected: *mut i32) -> i32;
     fn shell_find(buffer: *mut u16) -> i32;
-    fn shell_pick_file(buffer: *mut u16, size: i32) -> bool;
+    fn shell_pick_file(buffer: *mut u16, size: i32, kind: i32) -> bool;
+    fn shell_import_kind() -> i32;
     fn shell_notice(title: *const u16, message: *const u16);
     fn shell_prepare_page(width: *mut i32, height: *mut i32) -> *mut c_void;
     fn shell_discard_stage(stage: *mut c_void);
@@ -37,6 +46,8 @@ struct NativePrefs {
     width: i32,
     google: i32,
     reopen: i32,
+    light: i32,
+    blocked: i32,
 }
 fn notice(title: &str, message: &str) {
     unsafe { shell_notice(wide(title).as_ptr(), wide(message).as_ptr()) }
@@ -46,6 +57,7 @@ struct Window {
     context: RequestContext,
     google: bool,
     reopen: bool,
+    light: bool,
     last: String,
     find: String,
     settings_tabs: HashSet<i32>,
@@ -102,6 +114,12 @@ impl Window {
             width: self.width,
             google: self.google.into(),
             reopen: self.reopen.into(),
+            light: self.light.into(),
+            blocked: self
+                .session
+                .blocking_enabled
+                .load(std::sync::atomic::Ordering::Relaxed)
+                .into(),
         }
     }
 }
@@ -155,7 +173,34 @@ pub fn open(state: Arc<Session>, context: RequestContext) -> bool {
         .and_then(|v| v["width"].as_i64())
         .unwrap_or(216)
         .clamp(92, 350) as i32;
-    let handle = unsafe { shell_open(vertical, width, state.private, state.extension.is_some()) };
+    let light = prefs
+        .as_ref()
+        .and_then(|p| p["light"].as_bool())
+        .unwrap_or(false);
+    let blocked = prefs
+        .as_ref()
+        .and_then(|p| p["blocked"].as_bool())
+        .unwrap_or(true);
+    state
+        .blocking_enabled
+        .store(blocked, std::sync::atomic::Ordering::Relaxed);
+    context.set_chrome_color_scheme(
+        if light {
+            ColorVariant::LIGHT
+        } else {
+            ColorVariant::DARK
+        },
+        0,
+    );
+    let handle = unsafe {
+        shell_open(
+            vertical,
+            width,
+            state.private,
+            state.extension.is_some(),
+            light,
+        )
+    };
     if handle.is_null() {
         return false;
     }
@@ -202,6 +247,7 @@ pub fn open(state: Arc<Session>, context: RequestContext) -> bool {
             context,
             google,
             reopen,
+            light,
             last,
             find: String::new(),
             settings_tabs: HashSet::new(),
@@ -219,9 +265,9 @@ pub fn open(state: Arc<Session>, context: RequestContext) -> bool {
 fn new_page(url: &str) -> bool {
     let setup = WINDOW.with_borrow(|w| {
         w.as_ref()
-            .map(|s| (s.context.clone(), s.session.clone(), s.google))
+            .map(|s| (s.context.clone(), s.session.clone(), s.google, s.light))
     });
-    let Some((mut ctx, state, google)) = setup else {
+    let Some((mut ctx, state, google, light)) = setup else {
         return false;
     };
     let (mut width, mut height) = (0, 0);
@@ -253,7 +299,7 @@ fn new_page(url: &str) -> bool {
         Some(&mut TabClient::new(state)),
         Some(&string(target)),
         Some(&BrowserSettings {
-            background_color: 0xff101113,
+            background_color: if light { 0xffffffff } else { 0xff0b0b0b },
             ..Default::default()
         }),
         None,
@@ -316,8 +362,13 @@ pub fn refresh(b: &Browser) {
         });
     }
     let enabled = WINDOW.with_borrow(|w| {
-        w.as_ref()
-            .is_some_and(|s| s.session.filter.is_some() && !s.session.paused(&address))
+        w.as_ref().is_some_and(|s| {
+            s.session.filter.is_some()
+                && s.session
+                    .blocking_enabled
+                    .load(std::sync::atomic::Ordering::Relaxed)
+                && !s.session.paused(&address)
+        })
     });
     unsafe {
         shell_status(
@@ -385,7 +436,7 @@ fn save(w: &Window) {
         return;
     }
     if let Ok(mut tmp) = tempfile::NamedTempFile::new_in(&w.session.home) {
-        let prefs = serde_json::json!({"placement":if w.vertical{"left"}else{"top"},"width":w.width,"google":w.google,"reopen":w.reopen,"recent":w.recent,"last":if w.reopen {w.last.as_str()}else{""}});
+        let prefs = serde_json::json!({"placement":if w.vertical{"left"}else{"top"},"width":w.width,"light":w.light,"blocked":w.session.blocking_enabled.load(std::sync::atomic::Ordering::Relaxed),"google":w.google,"reopen":w.reopen,"recent":w.recent,"last":if w.reopen {w.last.as_str()}else{""}});
         if write!(tmp, "{prefs}").is_ok() && tmp.as_file().sync_all().is_ok() {
             let _ = tmp.persist(w.session.home.join("layout.json"));
         }
@@ -435,8 +486,17 @@ unsafe extern "C" fn browser_action(command: i32, tab: i32, text: *const u16) {
     }) else {
         return;
     };
+    if matches!(command, 5 | 10 | 42)
+        && cookie_import::ACTIVE.load(std::sync::atomic::Ordering::Acquire)
+    {
+        notice(
+            "Cookie import",
+            "The cookie store is still being updated. Try closing after the import finishes.",
+        );
+        return;
+    }
     let browser = id.and_then(|id| BROWSERS.with_borrow(|bs| bs.get(&id).cloned()));
-    if command == 10 || (command == 5 && order.len() == 1) {
+    if command == 10 || (matches!(command, 5 | 42) && order.len() == 1) {
         WINDOW.with_borrow(|w| {
             if let Some(w) = w {
                 save(w);
@@ -444,6 +504,70 @@ unsafe extern "C" fn browser_action(command: i32, tab: i32, text: *const u16) {
         });
     }
     match command {
+        43..=45 => {
+            let trusted = browser
+                .as_ref()
+                .and_then(|b| {
+                    b.main_frame().map(|f| {
+                        settings_document(b.identifier(), &CefString::from(&f.url()).to_string())
+                    })
+                })
+                .unwrap_or(false);
+            if !trusted {
+                return;
+            }
+            if command == 45 {
+                let targets = [
+                    "chrome://settings/content/all",
+                    "chrome://settings/clearBrowserData",
+                    "chrome://settings/downloads",
+                    "chrome://settings/languages",
+                    "chrome://settings/accessibility",
+                    "chrome://settings/",
+                ];
+                if let Some(target) = targets.get(tab as usize) {
+                    new_page(target);
+                }
+                return;
+            }
+            let theme_context = WINDOW.with_borrow_mut(|slot| {
+                let mut theme_context = None;
+                if let Some(w) = slot {
+                    if command == 43 {
+                        w.light = tab != 0;
+                        theme_context = Some((w.context.clone(), w.light));
+                    } else if w.session.filter.is_some() {
+                        w.session
+                            .blocking_enabled
+                            .store(tab != 0, std::sync::atomic::Ordering::Relaxed);
+                    }
+                    save(w);
+                }
+                theme_context
+            });
+            // Native redraw and CEF callbacks may synchronously reenter us.
+            if let Some((context, light)) = theme_context {
+                context.set_chrome_color_scheme(
+                    if light {
+                        ColorVariant::LIGHT
+                    } else {
+                        ColorVariant::DARK
+                    },
+                    0,
+                );
+                unsafe {
+                    shell_set_theme(light);
+                }
+            }
+            if let Some(b) = browser.as_ref() {
+                refresh(b);
+            }
+        }
+        42 => {
+            if let Some(host) = BROWSERS.with_borrow(|bs| bs.get(&tab).and_then(|b| b.host())) {
+                host.close_browser(0);
+            }
+        }
         41 => {
             if text.is_null() {
                 return;
@@ -532,6 +656,34 @@ unsafe extern "C" fn browser_action(command: i32, tab: i32, text: *const u16) {
             }
         }
         20..=22 => {
+            if command == 22 {
+                if state.private {
+                    notice(
+                        "Import browser data",
+                        "Open an ordinary window to import browser data.",
+                    );
+                    return;
+                }
+                match unsafe { shell_import_kind() } {
+                    0 => return,
+                    1 => {}
+                    2 => {
+                        if let Err(error) = cookie_import::run(&state, &ctx) {
+                            notice("Cookie import", &error);
+                        }
+                        return;
+                    }
+                    3 => {
+                        new_page("chrome://settings/importData");
+                        return;
+                    }
+                    4 => {
+                        new_page("chrome://password-manager/settings");
+                        return;
+                    }
+                    _ => return,
+                }
+            }
             if let Err(e) = library::action(command, &state, browser.as_ref()) {
                 notice("Bookmarks", &e);
             }
@@ -742,4 +894,8 @@ pub fn finish() {
 
 pub fn page_ready(id: i32) {
     unsafe { shell_ready(id) }
+}
+
+pub(super) fn import_active() -> bool {
+    cookie_import::ACTIVE.load(std::sync::atomic::Ordering::Acquire)
 }

@@ -1,0 +1,36 @@
+{
+  "date": "2026-11-16",
+  "status": "unfinished source checkpoint",
+  "host": "Windows x64",
+  "engine": "CEF 156.0.30+g6028375",
+  "rustTests": {
+    "targets": [
+      "policy",
+      "import",
+      "cookies"
+    ],
+    "passed": 6
+  },
+  "releaseLibraryBuild": "passed",
+  "settingsFlow": "passed",
+  "foregroundTabPaint": "passed: top and left, create/select/close and engine Extensions tab",
+  "hoverFlow": {
+    "expected": "#0b0b0b",
+    "case": "Previous button after hover handoff",
+    "observed": "#3a3a3a",
+    "status": "FAILED"
+  },
+  "unverified": [
+    "theme switching and persistence",
+    "middle-click semantics",
+    "cookie importer runtime",
+    "new engine settings destinations",
+    "menu rounding",
+    "small-scale logo legibility",
+    "fresh full smoke and capabilities"
+  ],
+  "installer": "not created",
+  "mainLocalPreview": "not replaced",
+  "logo": "draft PNG, not integrated",
+  "sourceRelease": "not production-ready"
+}

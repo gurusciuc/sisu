@@ -33,7 +33,7 @@ public class TabTransition {
           var c=bitmap.GetPixel(32+(bitmap.Width-64)*xi/8,155+(bitmap.Height-191)*yi/5);
           if(c.R<=5&&c.G<=5&&c.B<=5)sample.black++;
           if(c.R==247&&c.G==247&&c.B==241)sample.oldPage++;
-          if(c.R==16&&c.G==17&&c.B==19)sample.newPage++;
+          if(c.R==11&&c.G==11&&c.B==11)sample.newPage++;
           if(c.R>=250&&c.G>=250&&c.B>=250)sample.white++;
           sample.points++;
         }

@@ -65,10 +65,13 @@ enum Command {
   CaptionCloseWindow
 };
 namespace {
-const COLORREF ink = RGB(241, 242, 243), muted = RGB(167, 170, 176),
-               paper = RGB(22, 23, 25), band = RGB(14, 15, 17),
-               active = RGB(38, 39, 42), accent = RGB(150, 169, 196),
-               line = RGB(61, 63, 68);
+// Neutral OKLCH lightness, quantized to sRGB for Win32's 8-bit palette.
+COLORREF tone(int lightness){
+  constexpr unsigned char neutral[]={0,0,3,11,22,34,46,58,72,85,99,113,128,143,158,174,190,206,222,238,255};
+  auto value=neutral[std::clamp(lightness,0,100)/5];
+  return RGB(value,value,value);
+}
+COLORREF ink=tone(95),muted=tone(70),paper=tone(20),band=tone(15),active=tone(25),accent=tone(80),line=tone(35);
 struct Tab {
   int id;
   HWND button, page;
@@ -92,6 +95,17 @@ int current = -1, gutter = 216, addressX, addressY, addressW,
 bool left = false, resizing = false, loading = false, blocking = true,
      lab = false, privateMode = false;
 std::wstring activeUrl;
+bool lightMode = false;
+COLORREF surfaceColor=tone(15),tabFill=tone(30),tabBorder=tone(45),hoverFill=tone(35);
+void applyPalette(bool light){
+  lightMode=light;
+  ink=tone(light?10:95);muted=tone(light?50:70);
+  paper=tone(light?100:20);band=tone(light?95:15);
+  active=tone(light?100:25);accent=tone(light?30:80);
+  line=tone(light?85:35);surfaceColor=tone(light?100:15);
+  tabFill=tone(light?100:30);tabBorder=tone(light?70:45);
+  hoverFill=tone(light?90:35);
+}
 IAccPropServices *accessibility = nullptr;
 int px(int n) { return MulDiv(n, window ? GetDpiForWindow(window) : 96, 96); }
 void colorRect(HDC dc, RECT box, COLORREF color) {
@@ -327,6 +341,27 @@ void place(HWND w, int x, int y, int width, int height) {
   SetWindowPos(w, nullptr, x, y, width, height, SWP_NOZORDER | SWP_NOACTIVATE);
 }
 
+void setHovered(HWND next) {
+  if (hovered == next)
+    return;
+  auto previous = hovered;
+  hovered = next;
+  if (IsWindow(previous))
+    InvalidateRect(previous, nullptr, FALSE);
+  if (IsWindow(next))
+    InvalidateRect(next, nullptr, FALSE);
+}
+bool pointerOver(HWND target) {
+  POINT pointer{};
+  RECT bounds{};
+  return IsWindowVisible(target) && GetCursorPos(&pointer) &&
+         GetWindowRect(target, &bounds) && PtInRect(&bounds, pointer);
+}
+void reconcileHover() {
+  if (hovered && !pointerOver(hovered))
+    setHovered(nullptr);
+}
+
 void layout() {
   if (!window || !edit)
     return;
@@ -415,6 +450,7 @@ void layout() {
   for (const auto &t : tabs)
     if (IsWindowVisible(t.button))
       InvalidateRect(t.button, nullptr, FALSE);
+  reconcileHover();
   InvalidateRect(buttons[CloseTab], nullptr, FALSE);
   InvalidateRect(window, nullptr, FALSE);
 }
@@ -466,18 +502,32 @@ LRESULT CALLBACK controlProc(HWND h, UINT m, WPARAM w, LPARAM l, UINT_PTR,
   if (m == WM_ERASEBKGND &&
       (GetWindowLongPtrW(h, GWL_STYLE) & BS_TYPEMASK) == BS_OWNERDRAW)
     return 1;
-  if (m == WM_MOUSEMOVE && hovered != h) {
-    hovered = h;
+  if (m == WM_MOUSEMOVE) {
+    setHovered(h);
     TRACKMOUSEEVENT track{sizeof(track), TME_LEAVE, h, 0};
     TrackMouseEvent(&track);
-    InvalidateRect(h, nullptr, FALSE);
   }
   if (m == WM_MOUSELEAVE && hovered == h) {
-    hovered = nullptr;
-    InvalidateRect(h, nullptr, FALSE);
+    reconcileHover();
+    if (hovered == h) {
+      TRACKMOUSEEVENT track{sizeof(track), TME_LEAVE, h, 0};
+      TrackMouseEvent(&track);
+    }
   }
+  if ((m == WM_CAPTURECHANGED || m == WM_CANCELMODE) && hovered == h)
+    reconcileHover();
+  if (m == WM_NCDESTROY && hovered == h)
+    setHovered(nullptr);
   if (m == WM_LBUTTONDOWN)
     keyboardFocus = false;
+  if (m == WM_MBUTTONUP) {
+    auto tab = std::find_if(tabs.begin(), tabs.end(),
+                            [h](const Tab &tab) { return tab.button == h; });
+    if (tab != tabs.end()) {
+      browser_action(42, tab->id, nullptr);
+      return 0;
+    }
+  }
   if (m == WM_KEYDOWN) {
     keyboardFocus = true;
     bool ctrl = (GetKeyState(VK_CONTROL) & 0x8000) != 0;
@@ -554,6 +604,36 @@ HWND button(int id, const wchar_t *name) {
   SetWindowSubclass(b, controlProc, 1, 0);
   return b;
 }
+HWND roundingMenu = nullptr;
+int roundedMenuWidth = 0, roundedMenuHeight = 0;
+LRESULT CALLBACK menuFrameHook(int code, WPARAM w, LPARAM l) {
+  if (code >= 0) {
+    auto message = (CWPRETSTRUCT *)l;
+    if (message->message == WM_WINDOWPOSCHANGED) {
+      wchar_t type[32]{};
+      GetClassNameW(message->hwnd, type, 32);
+      if (wcscmp(type, L"#32768") == 0) {
+        RECT r{};
+        GetWindowRect(message->hwnd, &r);
+        int width = r.right - r.left, height = r.bottom - r.top;
+        if (width > 0 && height > 0 &&
+            (roundingMenu != message->hwnd || width != roundedMenuWidth ||
+             height != roundedMenuHeight)) {
+          roundingMenu = message->hwnd;
+          roundedMenuWidth = width;
+          roundedMenuHeight = height;
+          int corner = 2;
+          DwmSetWindowAttribute(message->hwnd, 33, &corner, sizeof(corner));
+          auto region =
+              CreateRoundRectRgn(0, 0, width + 1, height + 1, px(16), px(16));
+          if (!SetWindowRgn(message->hwnd, region, TRUE))
+            DeleteObject(region);
+        }
+      }
+    }
+  }
+  return CallNextHookEx(nullptr, code, w, l);
+}
 struct MenuRow {
   int id;
   std::wstring label, key;
@@ -570,7 +650,7 @@ void popup(int id) {
             {0, L"", L""},
             {Bookmarks, L"Bookmarks", L""},
             {AddBookmark, L"Bookmark this page", L"Ctrl+D"},
-            {Import, L"Import bookmarks…", L""},
+            {Import, L"Import browser data…", L""},
             {History, L"History", L"Ctrl+H"},
             {Downloads, L"Downloads", L"Ctrl+J"},
             {0, L"", L""},
@@ -593,9 +673,16 @@ void popup(int id) {
   }
   RECT rect{};
   GetWindowRect(buttons[id], &rect);
+  roundingMenu = nullptr;
+  roundedMenuWidth = roundedMenuHeight = 0;
+  auto rounding = SetWindowsHookExW(WH_CALLWNDPROCRET, menuFrameHook, nullptr,
+                                    GetCurrentThreadId());
   const int selected =
       TrackPopupMenu(m, TPM_RETURNCMD | TPM_RIGHTALIGN | TPM_RIGHTBUTTON,
                      rect.right, rect.bottom + px(5), 0, window, nullptr);
+  if (rounding)
+    UnhookWindowsHookEx(rounding);
+  roundingMenu = nullptr;
   DestroyMenu(m);
   DeleteObject(bg);
   if (selected >= 100 && selected - 100 < (int)tabs.size())
@@ -651,6 +738,12 @@ LRESULT CALLBACK proc(HWND h, UINT m, WPARAM w, LPARAM l) {
       PostMessageW(h, WM_COMMAND, command, 0);
       return 0;
     }
+    break;
+  case WM_NCMOUSEMOVE:
+    reconcileHover();
+    break;
+  case WM_ACTIVATE:
+    reconcileHover();
     break;
   case WM_NCCALCSIZE:
     if (w) {
@@ -769,6 +862,7 @@ LRESULT CALLBACK proc(HWND h, UINT m, WPARAM w, LPARAM l) {
     }
     break;
   case WM_MOUSEMOVE:
+    reconcileHover();
     if (resizing) {
       gutter =
           std::clamp(MulDiv(GET_X_LPARAM(l), 96, GetDpiForWindow(h)), 92, 350);
@@ -802,7 +896,7 @@ LRESULT CALLBACK proc(HWND h, UINT m, WPARAM w, LPARAM l) {
               left ? r.bottom : px(47)};
       colorRect(dc, tb, band);
       RECT field{addressX, addressY, addressX + addressW, addressY + px(35)};
-      rounded(dc, field, active, GetFocus() == edit ? RGB(144, 176, 155) : line,
+      rounded(dc, field, active, GetFocus() == edit ? accent : line,
               12);
       if (left) {
         RECT wordmark{px(53), 0, px(150), px(47)};
@@ -818,7 +912,7 @@ LRESULT CALLBACK proc(HWND h, UINT m, WPARAM w, LPARAM l) {
     SetDCBrushColor((HDC)w, active);
     return (LRESULT)GetStockObject(DC_BRUSH);
   case WM_CTLCOLORSTATIC:
-    SetDCBrushColor((HDC)w, RGB(16, 17, 19));
+    SetDCBrushColor((HDC)w, surfaceColor);
     return (LRESULT)GetStockObject(DC_BRUSH);
   case WM_CTLCOLOREDIT:
     SetBkColor((HDC)w, active);
@@ -851,7 +945,7 @@ LRESULT CALLBACK proc(HWND h, UINT m, WPARAM w, LPARAM l) {
         if (selected) {
           auto box = r;
           InflateRect(&box, -4, -2);
-          rounded(dc, box, RGB(51, 65, 57), RGB(51, 65, 57), 8);
+          rounded(dc, box, hoverFill, hoverFill, 8);
         }
         auto length =
             SendMessageW(item->hwndItem, LB_GETTEXTLEN, item->itemID, 0);
@@ -879,22 +973,25 @@ LRESULT CALLBACK proc(HWND h, UINT m, WPARAM w, LPARAM l) {
     bool tab = id >= 100,
          strip = tab || id == NewTab || id == Placement || id == AllTabs ||
                  (id >= CaptionMinimize && id <= CaptionCloseWindow);
-    colorRect(dc, r, id == CloseTab ? RGB(43, 47, 47) : (strip ? band : paper));
+    colorRect(dc, r, id == CloseTab ? tabFill : (strip ? band : paper));
     if (tab) {
       auto it = std::find_if(tabs.begin(), tabs.end(),
                              [&](auto &t) { return t.button == d->hwndItem; });
       if (it == tabs.end())
         return TRUE;
       bool on = it->id == current;
-      if (on)
-        rounded(dc, r, RGB(43, 47, 47), RGB(77, 91, 87), 11);
+      if (on) {
+        auto outline = r;
+        InflateRect(&outline, -1, -1);
+        rounded(dc, outline, tabFill, tabBorder, 11);
+      }
       icon(dc, 0, px(19), r.bottom / 2, on ? ink : muted);
       RECT label{px(35), 0, r.right - px(on ? 34 : 6), r.bottom};
       text(dc, it->title, label, on ? ink : muted, labelFont);
     } else if (id == Protection) {
-      if (hovered == d->hwndItem)
+      if (pointerOver(d->hwndItem))
         rounded(dc, r, active, active, 10);
-      icon(dc, id, px(18), r.bottom / 2, blocking ? RGB(167, 197, 174) : muted);
+      icon(dc, id, px(18), r.bottom / 2, blocking ? ink : muted);
       if (r.right > px(45)) {
         RECT label{px(33), 0, r.right - px(3), r.bottom};
         text(dc,
@@ -905,11 +1002,9 @@ LRESULT CALLBACK proc(HWND h, UINT m, WPARAM w, LPARAM l) {
              label, ink, labelFont);
       }
     } else {
-      if (hovered == d->hwndItem || (d->itemState & ODS_SELECTED))
-        rounded(dc, r,
-                id == CaptionCloseWindow ? RGB(166, 45, 55) : RGB(48, 50, 54),
-                id == CaptionCloseWindow ? RGB(166, 45, 55) : RGB(48, 50, 54),
-                8);
+      if (pointerOver(d->hwndItem) || (d->itemState & ODS_SELECTED))
+        rounded(dc, r, hoverFill,
+                hoverFill, 8);
       icon(dc, id, r.right / 2, r.bottom / 2,
            (d->itemState & ODS_DISABLED) ? line : muted);
     }
@@ -931,8 +1026,9 @@ LRESULT CALLBACK proc(HWND h, UINT m, WPARAM w, LPARAM l) {
 } // namespace
 #include "dialogs.inl"
 #include "settings.inl"
-extern "C" HWND shell_open(bool vertical, int width, bool priv,
-                           bool extension) {
+extern "C" HWND shell_open(bool vertical, int width, bool priv, bool extension,
+                           bool light) {
+  applyPalette(light);
   left = vertical;
   gutter = std::clamp(width, 92, 350);
   privateMode = priv;
@@ -971,7 +1067,7 @@ extern "C" HWND shell_open(bool vertical, int width, bool priv,
                    SWP_FRAMECHANGED);
   Gdiplus::GdiplusStartupInput drawOptions;
   Gdiplus::GdiplusStartup(&drawingToken, &drawOptions, nullptr);
-  BOOL dark = TRUE;
+  BOOL dark = !lightMode;
   DwmSetWindowAttribute(window, 20, &dark, sizeof(dark));
   COLORREF caption = band;
   DwmSetWindowAttribute(window, 35, &caption, sizeof(caption));
@@ -979,8 +1075,7 @@ extern "C" HWND shell_open(bool vertical, int width, bool priv,
   CoCreateInstance(CLSID_AccPropServices, nullptr, CLSCTX_INPROC_SERVER,
                    IID_PPV_ARGS(&accessibility));
   buttons[CaptionMinimize] = button(CaptionMinimize, L"Minimize");
-  buttons[CaptionMaximize] =
-      button(CaptionMaximize, L"CaptionMaximize or restore");
+  buttons[CaptionMaximize] = button(CaptionMaximize, L"Maximize or restore");
   buttons[CaptionCloseWindow] = button(CaptionCloseWindow, L"Close window");
   buttons[Back] = button(Back, L"Back");
   buttons[Forward] = button(Forward, L"Forward");
@@ -1039,11 +1134,11 @@ LRESULT CALLBACK surfaceProc(HWND h, UINT msg, WPARAM w, LPARAM l, UINT_PTR,
   if (msg == WM_ERASEBKGND) {
     RECT r;
     GetClientRect(h, &r);
-    colorRect((HDC)w, r, RGB(16, 17, 19));
+    colorRect((HDC)w, r, surfaceColor);
     return 1;
   }
   if (msg == WM_CTLCOLORSTATIC) {
-    SetDCBrushColor((HDC)w, RGB(16, 17, 19));
+    SetDCBrushColor((HDC)w, surfaceColor);
     return (LRESULT)GetStockObject(DC_BRUSH);
   }
   return DefSubclassProc(h, msg, w, l);
@@ -1185,4 +1280,14 @@ extern "C" void shell_suggestions(const wchar_t *query,
   SetWindowPos(addressSuggestions, HWND_TOP, addressX, addressY + px(38),
                addressW, px(31 * (int)suggestionValues.size() + 4),
                SWP_SHOWWINDOW | SWP_NOACTIVATE);
+}
+
+extern "C" void shell_set_theme(bool light) {
+  applyPalette(light);
+  BOOL dark = !light;
+  DwmSetWindowAttribute(window, 20, &dark, sizeof(dark));
+  DwmSetWindowAttribute(window, 35, &band, sizeof(band));
+  DwmSetWindowAttribute(window, 36, &ink, sizeof(ink));
+  RedrawWindow(window, nullptr, nullptr,
+               RDW_INVALIDATE | RDW_ALLCHILDREN | RDW_NOERASE);
 }

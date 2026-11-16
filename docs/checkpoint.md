@@ -1,5 +1,11 @@
 # Windows feasibility checkpoint · 16 November 2026
 
+## End-of-session source checkpoint
+
+The user requested pushing current progress and leaving a prompt for tomorrow. [Continuation prompt and precise state](continue-tomorrow.md) supersedes older feature descriptions below where they differ. The latest source adds monochrome light/dark palettes, broader settings, middle-click close routing, menu rounding and a JSON cookie import path. These features remain partly unverified. Six release Rust tests, the release library build, real Settings/bookmark/private flow and foreground tab-paint checks pass. The caption hover handoff regression still fails. Cookie migration, theme switching, middle-click semantics and the new engine-setting destinations need runtime acceptance. The generated logo is a draft. No installer or production release was created, and the user's main local preview has not been replaced with this candidate.
+
+[Latest check evidence](../evidence/windows-x64/checkpoint/checkpoint.json) and [design reference review](design-reference-review.md) record the current state. The follow-up two-page baseline collected before these feature changes is 156.29 MiB median private working set and 261.23 MiB median private commit. Its viewport differs from the earlier baseline, so it establishes no comparable gain or regression. [Raw results](../evidence/windows-x64/followup-baseline/benchmark.json)
+
 ## Follow-up after local testing
 
 The revised local Windows build uses Arial and geometric icons, an integrated draggable tab/caption row, and local address suggestions. Repeated Ctrl+T/Ctrl+W cycles passed in top and left layouts while preserving the anchor document and draft. Caption alignment, dragging hit tests, minimize/maximize/restore, local suggestion selection, recent-URL persistence and private separation have targeted tests. View positioning now skips unchanged geometry, closing selects a survivor before removing the old parent, and chrome painting uses temporary double buffers. Create-and-close window-surface samples contained zero near-solid black/white frames. Hardware presentation remains a separate observation. [Follow-up evidence](../evidence/windows-x64/ui-fix/build.json)

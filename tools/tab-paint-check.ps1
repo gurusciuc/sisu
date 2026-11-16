@@ -45,11 +45,11 @@ function Check-Pixels($name,$selected) {
    foreach($tab in @(Tabs)){
      $r=New-Object TabPaintTest+Rect;$null=[TabPaintTest]::GetWindowRect($tab,[ref]$r)
      $color=$bitmap.GetPixel([int](($r.l+$r.r)/2)-$rect.l,$r.t-$rect.t+6)
-     $expected=if($index -eq $selected){@(43,47,47)}else{@(14,15,17)}
+     $expected=if($index -eq $selected){@(46,46,46)}else{@(11,11,11)}
      if($color.R -ne $expected[0] -or $color.G -ne $expected[1] -or $color.B -ne $expected[2]){throw "$name tab $index has a stale selection fill ($color)"}
      if($index -ne $selected){
        $oldClose=$bitmap.GetPixel($r.r-$rect.l-17,[int](($r.t+$r.b)/2)-$rect.t)
-       if($oldClose.R -ne 14 -or $oldClose.G -ne 15 -or $oldClose.B -ne 17){throw "$name has a stale close-button rectangle ($oldClose)"}
+       if($oldClose.R -ne 11 -or $oldClose.G -ne 11 -or $oldClose.B -ne 11){throw "$name has a stale close-button rectangle ($oldClose)"}
      }
      $index++
    }

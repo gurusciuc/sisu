@@ -43,6 +43,7 @@ struct Session {
     private: bool,
     extension: Option<PathBuf>,
     filter: Option<Filter>,
+    blocking_enabled: std::sync::atomic::AtomicBool,
     exceptions: Mutex<HashSet<String>>,
     _scratch: Option<tempfile::TempDir>,
 }
@@ -107,6 +108,7 @@ impl Session {
             initial,
             extension,
             filter,
+            blocking_enabled: std::sync::atomic::AtomicBool::new(true),
             exceptions: Default::default(),
             _scratch: scratch,
         })
@@ -212,7 +214,11 @@ wrap_life_span_handler! {
             if let Some(b) = b {
                 #[cfg(windows)]
                 windows::removed(b.identifier());
-                if BROWSERS.with_borrow_mut(|tabs| { tabs.remove(&b.identifier()); tabs.is_empty() }) { quit_message_loop(); }
+                if BROWSERS.with_borrow_mut(|tabs| { tabs.remove(&b.identifier()); tabs.is_empty() }) {
+                    #[cfg(windows)]
+                    if windows::import_active(){return;}
+                    quit_message_loop();
+                }
             }
         }
     }
@@ -258,6 +264,12 @@ fn intercept(
     origin: Option<&CefString>,
 ) -> Option<ResourceRequestHandler> {
     state.filter.as_ref()?;
+    if !state
+        .blocking_enabled
+        .load(std::sync::atomic::Ordering::Relaxed)
+    {
+        return None;
+    }
     let req = req?;
     let address = CefString::from(&req.url()).to_string();
     if !address.starts_with("https://") && !address.starts_with("http://") {
@@ -299,7 +311,7 @@ wrap_resource_request_handler! {
     struct Network { state: Arc<Session>, source: String }
     impl ResourceRequestHandler {
         fn on_before_resource_load(&self, _b:Option<&mut Browser>, _f:Option<&mut Frame>, req:Option<&mut Request>, _cb:Option<&mut Callback>) -> ReturnValue {
-            if let (Some(filter), Some(r)) = (&self.state.filter, req)
+            if self.state.blocking_enabled.load(std::sync::atomic::Ordering::Relaxed) && let (Some(filter), Some(r)) = (&self.state.filter, req)
                 && filter.blocks(&CefString::from(&r.url()).to_string(), &self.source, resource_kind(r.resource_type()), &CefString::from(&r.method()).to_string()) {
                 return ReturnValue::CANCEL;
             }
@@ -318,6 +330,7 @@ wrap_load_handler! {
             #[cfg(windows)]
             if f.as_ref().is_some_and(|f|f.is_main()!=0) && let Some(b)=b.as_ref(){windows::page_ready(b.identifier());}
             let (Some(filter), Some(frame)) = (&self.state.filter, f) else { return };
+            if !self.state.blocking_enabled.load(std::sync::atomic::Ordering::Relaxed){return;}
             let url = CefString::from(&frame.url()).to_string();
             if web_host(&url).is_none() || (self.state.owns_exceptions(b.as_deref()) && self.state.paused(&top_url(b))) { return; }
             let css = filter.css(&url);

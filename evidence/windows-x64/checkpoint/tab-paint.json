@@ -1,0 +1,16 @@
+{
+  "method": "Foreground screen pixels",
+  "layouts": [
+    "top",
+    "left"
+  ],
+  "inactiveFill": true,
+  "activeFill": true,
+  "noStaleCloseRectangle": true,
+  "create": true,
+  "select": true,
+  "close": true,
+  "managerInTab": true,
+  "managerReused": true,
+  "noExtraManagerWindow": true
+}

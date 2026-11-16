@@ -3,7 +3,7 @@
 // control notifications reach Rust. The associated CEF document owns history.
 namespace {
 struct SettingsView {
-  Preferences prefs{-1, -1, -1, -1};
+  Preferences prefs{-1, -1, -1, -1, -1, -1};
   int scroll = 0, extent = 0;
   HFONT title = nullptr;
 };
@@ -11,7 +11,13 @@ constexpr int SettingsTitle = 240, AppearanceHeading = 241,
               PlacementLabel = 242, WidthLabel = 243, BrowsingHeading = 244,
               SearchLabel = 245, StartupLabel = 246, DataHeading = 247,
               DataLabel = 248, ProfileLabel = 249, WidthApply = 250;
-constexpr COLORREF settingsBg = RGB(16, 17, 19);
+const COLORREF &settingsBg = surfaceColor;
+constexpr int ThemeLabel = 260, ThemeDark = 261, ThemeLight = 262,
+              BlockLabel = 263, BlockOn = 264, BlockOff = 265, SiteData = 266,
+              ClearData = 267, DownloadsSettings = 268, LanguageSettings = 269,
+              AccessibilitySettings = 270, AdvancedSettings = 271,
+              ToolsLabel = 272, VersionLabel = 273, SiteDataLabel = 274,
+              AccessLabel = 275, BlockingNote = 276;
 SettingsView *settingsView(HWND h) {
   return reinterpret_cast<SettingsView *>(GetWindowLongPtrW(h, GWLP_USERDATA));
 }
@@ -50,6 +56,7 @@ void positionSettings(HWND h) {
   move(ProfileLabel, x, y, content, 25);
   y += 47;
   group(AppearanceHeading);
+  row(ThemeLabel, ThemeDark, ThemeLight);
   row(PlacementLabel, TabTop, TabLeft);
   row(WidthLabel, WidthField, WidthApply, true);
   y += 14;
@@ -58,7 +65,15 @@ void positionSettings(HWND h) {
   row(StartupLabel, StartupBlank, StartupLast);
   y += 14;
   group(DataHeading);
+  row(BlockLabel, BlockOn, BlockOff);
+  move(BlockingNote, x, y, content, 24);
+  y += 34;
   row(DataLabel, PickImport, OpenPrivacy);
+  row(SiteDataLabel, SiteData, ClearData);
+  row(ToolsLabel, DownloadsSettings, LanguageSettings);
+  row(AccessLabel, AccessibilitySettings, AdvancedSettings);
+  move(VersionLabel, x, y, content, 24);
+  y += 34;
   s->extent = y + s->scroll + 21;
   int maxScroll = std::max(0, s->extent - height);
   if (s->scroll > maxScroll) {
@@ -149,6 +164,9 @@ LRESULT CALLBACK settingsProc(HWND h, UINT m, WPARAM w, LPARAM l) {
                     : L"Preferences for this profile",
         ProfileLabel);
     add(L"Appearance", AppearanceHeading);
+    add(L"Color mode", ThemeLabel);
+    add(L"Dark", ThemeDark, true);
+    add(L"Light", ThemeLight, true);
     add(L"Tab placement", PlacementLabel);
     add(L"Top", TabTop, true);
     add(L"Left", TabLeft, true);
@@ -172,7 +190,27 @@ LRESULT CALLBACK settingsProc(HWND h, UINT m, WPARAM w, LPARAM l) {
     add(L"Reopen last page", StartupLast, true);
     add(L"Privacy and data", DataHeading);
     add(L"Browser data", DataLabel);
-    add(L"Import bookmarks…", PickImport, true);
+    add(L"Native blocking", BlockLabel);
+    add(L"On", BlockOn, true);
+    add(L"Off", BlockOff, true);
+    add(L"Import browser data…", PickImport, true);
+    add(L"Reload open pages after changing blocking.", BlockingNote);
+    add(L"Stored data", SiteDataLabel);
+    add(L"Browser tools", ToolsLabel);
+    add(L"More options", AccessLabel);
+    add(L"Cookies and site data", SiteData, true);
+    add(L"Clear browsing data", ClearData, true);
+    add(L"Downloads", DownloadsSettings, true);
+    add(L"Languages", LanguageSettings, true);
+    add(L"Accessibility", AccessibilitySettings, true);
+    add(L"Advanced settings", AdvancedSettings, true);
+    add(L"Sisu 0.1.0 preview · Apache 2.0 · © 2026 Sisu contributors",
+        VersionLabel);
+    if (lab) {
+      EnableWindow(GetDlgItem(h, BlockOn), FALSE);
+      EnableWindow(GetDlgItem(h, BlockOff), FALSE);
+    }
+
     add(L"Site permissions", OpenPrivacy, true);
     if (privateMode) {
       EnableWindow(GetDlgItem(h, PickImport), FALSE);
@@ -218,10 +256,14 @@ LRESULT CALLBACK settingsProc(HWND h, UINT m, WPARAM w, LPARAM l) {
               (id == ProviderDuck && !s->prefs.google) ||
               (id == ProviderGoogle && s->prefs.google) ||
               (id == StartupBlank && !s->prefs.reopen) ||
-              (id == StartupLast && s->prefs.reopen);
+              (id == StartupLast && s->prefs.reopen) ||
+              (id == ThemeDark && !s->prefs.light) ||
+              (id == ThemeLight && s->prefs.light) ||
+              (id == BlockOn && s->prefs.blocked) ||
+              (id == BlockOff && !s->prefs.blocked);
     bool enabled = IsWindowEnabled(d->hwndItem);
     colorRect(dc, box, settingsBg);
-    rounded(dc, box, on ? ink : (hovered == d->hwndItem ? line : active),
+    rounded(dc, box, on ? ink : (pointerOver(d->hwndItem) ? line : active),
             on ? ink : line, 10);
     wchar_t label[64]{};
     GetWindowTextW(d->hwndItem, label, 64);
@@ -237,6 +279,18 @@ LRESULT CALLBACK settingsProc(HWND h, UINT m, WPARAM w, LPARAM l) {
     if (HIWORD(w) != BN_CLICKED)
       return 0;
     int id = LOWORD(w);
+    if (id == ThemeDark || id == ThemeLight) {
+      browser_action(43, id == ThemeLight, nullptr);
+      return 0;
+    }
+    if (id == BlockOn || id == BlockOff) {
+      browser_action(44, id == BlockOn, nullptr);
+      return 0;
+    }
+    if (id >= SiteData && id <= AdvancedSettings) {
+      browser_action(45, id - SiteData, nullptr);
+      return 0;
+    }
     if (id >= TabTop && id <= StartupLast) {
       browser_action(30 + id - TabTop, 0, nullptr);
       return 0;
@@ -312,6 +366,9 @@ extern "C" void shell_sync_settings(int id, bool visible, Preferences prefs) {
     if (s->prefs.width != prefs.width)
       SetDlgItemInt(it->settings, WidthField, prefs.width, FALSE);
     s->prefs = prefs;
+    for (int control = ThemeDark; control <= BlockOff; control++)
+      if (auto h = GetDlgItem(it->settings, control))
+        InvalidateRect(h, nullptr, FALSE);
     for (int i = TabTop; i <= StartupLast; i++)
       InvalidateRect(GetDlgItem(it->settings, i), nullptr, FALSE);
   }

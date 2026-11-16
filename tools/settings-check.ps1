@@ -94,6 +94,9 @@ try {
     [IO.File]::WriteAllText($export,'<!DOCTYPE NETSCAPE-Bookmark-file-1><DL><DT><H3>Reading</H3><DL><DT><A HREF="https://example.org/article">Article</A></DL></DL>')
     $pick=[SettingsTest]::GetDlgItem((GetPanel),207)
     $null=[SettingsTest]::PostMessage($pick,245,[IntPtr]::Zero,[IntPtr]::Zero)
+    WaitFor {[SettingsTest]::OwnedDialog($app.Id,'Import browser data') -ne [IntPtr]::Zero} 'import format chooser'
+    $chooser=[SettingsTest]::OwnedDialog($app.Id,'Import browser data')
+    $null=[SettingsTest]::PostMessage([SettingsTest]::GetDlgItem($chooser,207),245,[IntPtr]::Zero,[IntPtr]::Zero)
     $pickerTitle='Import a bookmarks HTML export from Brave, Chrome, or Firefox'
     WaitFor {[SettingsTest]::OwnedDialog($app.Id,$pickerTitle) -ne [IntPtr]::Zero} 'bookmark file picker'
     $picker=[SettingsTest]::OwnedDialog($app.Id,$pickerTitle)

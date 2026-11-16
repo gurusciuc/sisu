@@ -1,4 +1,5 @@
 pub mod bookmarks;
+pub mod cookies;
 use adblock::{Engine, request::Request};
 
 /// Only build-generated, hash-pinned list bytes enter the native deserializer.
