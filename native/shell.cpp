@@ -87,7 +87,8 @@ HWND hovered = nullptr;
 bool keyboardFocus = false;
 int presented = -1;
 int pending = -1;
-int current = -1, gutter = 216, addressX, addressY, addressW, scrollIndex = 0;
+int current = -1, gutter = 216, addressX, addressY, addressW,
+    addressLineHeight = 0, scrollIndex = 0;
 bool left = false, resizing = false, loading = false, blocking = true,
      lab = false, privateMode = false;
 std::wstring activeUrl;
@@ -293,8 +294,18 @@ void setFonts() {
                        0, 0, CLEARTYPE_QUALITY, 0, fontFace());
   };
   auto next = make(14, FW_NORMAL), nextSmall = make(14, FW_NORMAL);
-  if (edit)
+  auto dc = GetDC(window);
+  auto previous = SelectObject(dc, next);
+  TEXTMETRICW metrics{};
+  GetTextMetricsW(dc, &metrics);
+  addressLineHeight = metrics.tmHeight;
+  SelectObject(dc, previous);
+  ReleaseDC(window, dc);
+  if (edit) {
     SendMessageW(edit, WM_SETFONT, (WPARAM)next, 1);
+    SendMessageW(edit, EM_SETMARGINS, EC_LEFTMARGIN | EC_RIGHTMARGIN,
+                 MAKELPARAM(0, 0));
+  }
   if (font)
     DeleteObject(font);
   if (labelFont)
@@ -378,7 +389,9 @@ void layout() {
   addressX = side + px(122);
   addressY = top + px(8);
   addressW = std::max(px(55), int(r.right) - px(61) - protectWidth - addressX);
-  place(edit, addressX + px(12), addressY + px(6), addressW - px(24), px(22));
+  const int lineHeight = addressLineHeight ? addressLineHeight : px(16);
+  place(edit, addressX + px(12), addressY + (px(35) - lineHeight) / 2,
+        addressW - px(24), lineHeight);
   place(viewport, side, top + nav, r.right - side, r.bottom - top - nav);
   RECT v{};
   GetClientRect(viewport, &v);
