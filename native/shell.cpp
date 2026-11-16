@@ -98,15 +98,28 @@ void colorRect(HDC dc, RECT box, COLORREF color) {
   FillRect(dc, &box, (HBRUSH)GetStockObject(DC_BRUSH));
 }
 void rounded(HDC dc, RECT box, COLORREF fill, COLORREF border, int radius) {
-  auto pen = CreatePen(PS_SOLID, 1, border);
-  auto old = SelectObject(dc, pen);
-  auto brush = SelectObject(dc, GetStockObject(DC_BRUSH));
-  SetDCBrushColor(dc, fill);
-  RoundRect(dc, box.left, box.top, box.right, box.bottom, px(radius),
-            px(radius));
-  SelectObject(dc, brush);
-  SelectObject(dc, old);
-  DeleteObject(pen);
+  using namespace Gdiplus;
+  const float x = box.left + .5f, y = box.top + .5f;
+  const float width = std::max(0.f, float(box.right - box.left) - 1.f);
+  const float height = std::max(0.f, float(box.bottom - box.top) - 1.f);
+  const float diameter = std::min(float(px(radius)), std::min(width, height));
+  if (diameter <= 0)
+    return;
+  Graphics graphics(dc);
+  graphics.SetSmoothingMode(SmoothingModeAntiAlias);
+  GraphicsPath shape;
+  shape.AddArc(x, y, diameter, diameter, 180, 90);
+  shape.AddArc(x + width - diameter, y, diameter, diameter, 270, 90);
+  shape.AddArc(x + width - diameter, y + height - diameter, diameter, diameter,
+               0, 90);
+  shape.AddArc(x, y + height - diameter, diameter, diameter, 90, 90);
+  shape.CloseFigure();
+  SolidBrush brush(
+      Color(255, GetRValue(fill), GetGValue(fill), GetBValue(fill)));
+  Pen pen(Color(255, GetRValue(border), GetGValue(border), GetBValue(border)),
+          1.f);
+  graphics.FillPath(&brush, &shape);
+  graphics.DrawPath(&pen, &shape);
 }
 void icon(HDC dc, int id, int x, int y, COLORREF c) {
   using namespace Gdiplus;
@@ -383,6 +396,13 @@ void layout() {
   for (auto &t : tabs)
     if (t.id != presented && IsWindowVisible(t.page))
       ShowWindow(t.page, SW_HIDE);
+  // The close button moves over sibling tab controls. Repaint both the
+  // selected state and the area it uncovered, even when tab bounds did not
+  // move.
+  for (const auto &t : tabs)
+    if (IsWindowVisible(t.button))
+      InvalidateRect(t.button, nullptr, FALSE);
+  InvalidateRect(buttons[CloseTab], nullptr, FALSE);
   InvalidateRect(window, nullptr, FALSE);
 }
 int shortcutCommand(WPARAM key) {
@@ -430,6 +450,9 @@ int shortcutCommand(WPARAM key) {
 }
 LRESULT CALLBACK controlProc(HWND h, UINT m, WPARAM w, LPARAM l, UINT_PTR,
                              DWORD_PTR) {
+  if (m == WM_ERASEBKGND &&
+      (GetWindowLongPtrW(h, GWL_STYLE) & BS_TYPEMASK) == BS_OWNERDRAW)
+    return 1;
   if (m == WM_MOUSEMOVE && hovered != h) {
     hovered = h;
     TRACKMOUSEEVENT track{sizeof(track), TME_LEAVE, h, 0};
@@ -1065,8 +1088,6 @@ extern "C" void shell_select(int id) {
   if (it != tabs.end() && !IsWindowVisible(it->button))
     scrollIndex = (int)(it - tabs.begin());
   layout();
-  for (auto &t : tabs)
-    InvalidateRect(t.button, nullptr, TRUE);
 }
 extern "C" void shell_title(int id, const wchar_t *title) {
   for (auto &t : tabs)

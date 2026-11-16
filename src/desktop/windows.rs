@@ -631,17 +631,35 @@ unsafe extern "C" fn browser_action(command: i32, tab: i32, text: *const u16) {
                 select(order[(idx + 1) % order.len()]);
             }
         }
-        16 | 17 => {
+        16 => {
+            let existing = BROWSERS.with_borrow(|browsers| {
+                order
+                    .iter()
+                    .find(|id| {
+                        browsers
+                            .get(id)
+                            .and_then(|b| b.main_frame())
+                            .is_some_and(|f| {
+                                CefString::from(&f.url())
+                                    .to_string()
+                                    .starts_with("chrome://extensions")
+                            })
+                    })
+                    .copied()
+            });
+            if let Some(id) = existing {
+                select(id);
+            } else {
+                new_page("chrome://extensions/");
+            }
+        }
+        17 => {
             let info = WindowInfo {
                 runtime_style: RuntimeStyle::CHROME,
                 ..Default::default()
             }
-            .set_as_popup(Default::default(), "Desktop Browser");
-            let dest = if command == 16 {
-                "chrome://extensions/"
-            } else {
-                "about:blank"
-            };
+            .set_as_popup(Default::default(), "Sisu");
+            let dest = "about:blank";
             browser_host_create_browser(
                 Some(&info),
                 Some(&mut TabClient::new(state)),

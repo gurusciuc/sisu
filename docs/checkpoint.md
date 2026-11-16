@@ -6,6 +6,8 @@ The revised local Windows build uses Arial and geometric icons, an integrated dr
 
 The user observed little memory advantage over Chrome with substantially fewer features. There is no verified matched-workload advantage for the current foundation, and Firefox has no established memory advantage in this project. Extension/window topology and equal-functionality comparisons remain architecture gates. [Foundation reassessment](foundation-reassessment.md)
 
+A subsequent foreground-screen regression reproduced stale active fills and a black rectangle where the close button moved away. Tab layout now invalidates the uncovered sibling controls without background erasure. Screen pixel checks pass after creating, selecting and closing tabs in top and left layouts. Rounded controls use antialiased GDI+ paths. The Extensions command now opens and reuses an engine-provided manager tab inside the Sisu frame. These UI changes preserve the open extension compatibility gates.
+
 ## Delivered
 
 The runnable x64 preview opens a shared-profile CEF Chrome runtime under a native shell. Browser controls use a restrained dark palette, Helvetica/Arial-family typography and Windows glyphs. Settings opens in a normal tab from the menu, Ctrl+, `#settings` or `browser://settings`. It includes tab placement and width, search provider, startup behavior, bookmark import and a link to engine site permissions. Private preference changes remain in memory.

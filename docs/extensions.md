@@ -1,6 +1,6 @@
 # Extension workflow matrix
 
-This is a Windows x64 checkpoint on Chromium 156.0.8078.96. Each lab launch enables one unpacked package in an ordinary lab profile and disables native filtering. The extension manager uses a separate full CEF Chrome-style window. Extension installation, CRX verification, runtime APIs, toolbar presentation and updates are distinct engineering work.
+This is a Windows x64 checkpoint on Chromium 156.0.8078.96. Each lab launch enables one unpacked package in an ordinary lab profile and disables native filtering. The engine-provided extension manager opens inside a regular Sisu tab, and reopening it selects that tab. A regression check verifies that the command creates no extra top-level window. Extension installation, CRX verification, runtime APIs, toolbar presentation and updates are distinct engineering work.
 
 The API fixture queried the real chrome.tabs model. Two shell tabs exposed distinct window IDs and both were marked active. This confirms the architecture gate in AGENTS.md. Full product compatibility depends on reconciling those identities and validating extension UI.
 
