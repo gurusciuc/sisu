@@ -1,0 +1,75 @@
+{
+  "host": {
+    "platform": "darwin",
+    "arch": "arm64",
+    "kernel": "27.2.0"
+  },
+  "reports": {
+    "mac-first": {
+      "run": "mac-first",
+      "documentId": "1665b4c1-6a6d-48be-87ba-01ffa440de83",
+      "prior": "empty",
+      "cookieBefore": "",
+      "draft": "",
+      "control": "true",
+      "hidden": "true",
+      "width": "1200",
+      "height": "716",
+      "scale": "2",
+      "extension": "",
+      "isolated": "true",
+      "visibility": "visible",
+      "topology": "",
+      "firstPaint": "7176"
+    },
+    "mac-restart": {
+      "run": "mac-restart",
+      "documentId": "1564d00a-f3e3-4f40-b2ab-5b20c9c1bec8",
+      "prior": "mac-first",
+      "cookieBefore": "fixture=mac-first",
+      "draft": "",
+      "control": "true",
+      "hidden": "true",
+      "width": "1200",
+      "height": "716",
+      "scale": "2",
+      "extension": "",
+      "isolated": "true",
+      "visibility": "visible",
+      "topology": "",
+      "firstPaint": "96"
+    }
+  },
+  "hits": [
+    "/?run=mac-first",
+    "/control.js",
+    "/subframe",
+    "/probe-ad.js?allowed",
+    "/bounce",
+    "/bounce",
+    "/favicon.ico",
+    "/report?run=mac-first&documentId=1665b4c1-6a6d-48be-87ba-01ffa440de83&prior=empty&cookieBefore=&draft=&control=true&hidden=true&width=1200&height=716&scale=2&extension=&isolated=true&visibility=visible&topology=&firstPaint=7176",
+    "/report?run=mac-first&documentId=1665b4c1-6a6d-48be-87ba-01ffa440de83&prior=empty&cookieBefore=&draft=&control=true&hidden=true&width=1200&height=716&scale=2&extension=&isolated=true&visibility=visible&topology=&firstPaint=7176",
+    "/?run=mac-restart",
+    "/control.js",
+    "/probe-ad.js?allowed",
+    "/subframe",
+    "/bounce",
+    "/bounce",
+    "/favicon.ico",
+    "/report?run=mac-restart&documentId=1564d00a-f3e3-4f40-b2ab-5b20c9c1bec8&prior=mac-first&cookieBefore=fixture%3Dmac-first&draft=&control=true&hidden=true&width=1200&height=716&scale=2&extension=&isolated=true&visibility=visible&topology=&firstPaint=96",
+    "/report?run=mac-restart&documentId=1564d00a-f3e3-4f40-b2ab-5b20c9c1bec8&prior=mac-first&cookieBefore=fixture%3Dmac-first&draft=&control=true&hidden=true&width=1200&height=716&scale=2&extension=&isolated=true&visibility=visible&topology=&firstPaint=96"
+  ],
+  "exits": [
+    {
+      "run": "mac-first",
+      "code": 0,
+      "signal": null
+    },
+    {
+      "run": "mac-restart",
+      "code": 0,
+      "signal": null
+    }
+  ]
+}

@@ -1,20 +1,21 @@
 // Adapted from tauri-apps/cef-rs cefsimple under MIT. See notices/cef-rs-MIT.txt.
 use super::BROWSERS;
 use cef::application_mac::{CefAppProtocol, CrAppControlProtocol, CrAppProtocol};
-use cef::{ImplBrowser, ImplBrowserHost};
+use cef::{BrowserHost, ImplBrowser, ImplBrowserHost, WindowOpenDisposition, sys};
 use objc2::{
     ClassType, DefinedClass, MainThreadMarker, MainThreadOnly, define_class, extern_methods,
     msg_send,
     rc::Retained,
-    runtime::{AnyObject, Bool, NSObject, NSObjectProtocol, ProtocolObject},
+    runtime::{AnyObject, Bool, NSObject, NSObjectProtocol, ProtocolObject, Sel},
     sel,
 };
 use objc2_app_kit::{
     NSApp, NSApplication, NSApplicationDelegate, NSApplicationTerminateReply, NSEvent,
-    NSUserInterfaceValidations, NSValidatedUserInterfaceItem,
+    NSEventModifierFlags, NSEventType, NSMenu, NSMenuItem, NSUserInterfaceValidations,
+    NSValidatedUserInterfaceItem, NSView,
 };
-use objc2_foundation::{NSBundle, NSObjectNSThreadPerformAdditions, ns_string};
-use std::{cell::Cell, ptr};
+use objc2_foundation::{NSObjectNSThreadPerformAdditions, NSString};
+use std::cell::Cell;
 
 define_class! {
     #[unsafe(super(NSObject))]
@@ -22,23 +23,24 @@ define_class! {
     pub struct SimpleAppDelegate;
 
     impl SimpleAppDelegate {
-        /// Create the application on the UI thread.
         #[unsafe(method(createApplication:))]
         unsafe fn create_application(&self, _object: Option<&AnyObject>) {
-            let app = NSApp(MainThreadMarker::new().expect("Not running on the main thread"));
-            assert!(app.isKindOfClass(SimpleApplication::class()));
-            assert!(
-                app.delegate()
-                    .unwrap()
-                    .isKindOfClass(SimpleAppDelegate::class())
-            );
+            let mtm = MainThreadMarker::new().expect("Not running on the main thread");
+            let app = NSApp(mtm);
+            // Chrome finishes installing its app controller asynchronously.
+            // Match cefsimple's deferred delegate setup after initialization.
+            app.setDelegate(Some(ProtocolObject::from_ref(self)));
+            setup_native_menu(&app, self, mtm);
+        }
 
-            let main_bundle = NSBundle::mainBundle();
-            let _: Bool = msg_send![&main_bundle,
-                loadNibNamed: ns_string!("MainMenu"),
-                owner: &*app,
-                topLevelObjects: ptr::null_mut::<*const AnyObject>()
-            ];
+        #[unsafe(method(performBrowserCommand:))]
+        unsafe fn perform_browser_command(&self, sender: &NSMenuItem) {
+            if let Some(host) = focused_host() {
+                let command = sender.tag() as i32;
+                if host.can_execute_chrome_command(command) != 0 {
+                    host.execute_chrome_command(command, WindowOpenDisposition::CURRENT_TAB);
+                }
+            }
         }
     }
 
@@ -71,14 +73,8 @@ define_class! {
     unsafe impl NSUserInterfaceValidations for SimpleAppDelegate {
         #[unsafe(method(validateUserInterfaceItem:))]
         unsafe fn validate_user_interface_item(&self, item: &ProtocolObject<dyn NSValidatedUserInterfaceItem>) -> Bool {
-            const IDC_FIND: isize = 37000;
-
-            let tag = item.tag();
-            if tag == IDC_FIND {
-                Bool::YES
-            } else {
-                Bool::NO
-            }
+            Bool::new(item.action() == Some(sel!(performBrowserCommand:)) &&
+                focused_host().is_some_and(|host| host.can_execute_chrome_command(item.tag() as i32) != 0))
         }
     }
 }
@@ -113,7 +109,16 @@ define_class!(
                 self.set_handling_send_event(true);
             }
 
-            let _: () = msg_send![super(self), sendEvent:event];
+            // Chrome's reference-window accelerator path can consume Cmd-Q
+            // before it reaches our application-menu target. Handle the app's
+            // standard quit equivalent here, without a global event monitor.
+            let flags = event.modifierFlags();
+            let quit = event.r#type() == NSEventType::KeyDown
+                && flags.contains(NSEventModifierFlags::Command)
+                && !flags.intersects(NSEventModifierFlags::Control | NSEventModifierFlags::Option)
+                && event.charactersIgnoringModifiers().is_some_and(|s| s.to_string().eq_ignore_ascii_case("q"));
+            if quit { request_termination(self); }
+            else { let _: () = msg_send![super(self), sendEvent:event]; }
 
             if !was_sending_event {
                 self.set_handling_send_event(false);
@@ -158,8 +163,8 @@ define_class!(
         /// The standard |-applicationShouldTerminate:| is not supported, and code paths
         /// leading to it must be redirected.
         #[unsafe(method(terminate:))]
-        unsafe fn terminate(&self, _sender: &AnyObject) {
-            let tabs = BROWSERS.with_borrow(|bs| bs.values().cloned().collect::<Vec<_>>()); for b in tabs { if let Some(host) = b.host() { host.close_browser(0); } }
+        unsafe fn terminate(&self, _sender: Option<&AnyObject>) {
+            request_termination(self);
         }
     }
 
@@ -179,6 +184,20 @@ define_class!(
 
     unsafe impl CefAppProtocol for SimpleApplication {}
 );
+
+fn request_termination(app: &NSApplication) {
+    let tabs = BROWSERS.with_borrow(|bs| bs.values().cloned().collect::<Vec<_>>());
+    for browser in tabs {
+        if let Some(host) = browser.host() {
+            host.close_browser(0);
+        }
+    }
+    // Close Chrome-created reference windows through their native delegates;
+    // these can exist outside the embedder-created browser registry.
+    for window in app.windows() {
+        window.performClose(None);
+    }
+}
 
 impl SimpleApplication {
     extern_methods! {
@@ -232,4 +251,101 @@ pub fn setup_simple_app_delegate() -> Retained<SimpleAppDelegate> {
     }
 
     simple_delegate
+}
+
+// Construct ordinary Cocoa menus without an Interface Builder resource, so a
+// local engineering build only needs Apple's Command Line Tools. Browser
+// commands remain in CEF's reference toolbar and its keyboard handling.
+fn setup_native_menu(app: &NSApplication, delegate: &SimpleAppDelegate, mtm: MainThreadMarker) {
+    fn item(mtm: MainThreadMarker, title: &str, key: &str, action: Sel) -> Retained<NSMenuItem> {
+        // SAFETY: all callers supply standard Cocoa responder selectors. A nil
+        // target deliberately uses the first responder chain.
+        unsafe {
+            NSMenuItem::initWithTitle_action_keyEquivalent(
+                NSMenuItem::alloc(mtm),
+                &NSString::from_str(title),
+                Some(action),
+                &NSString::from_str(key),
+            )
+        }
+    }
+    fn submenu(bar: &NSMenu, title: &str, mtm: MainThreadMarker) -> Retained<NSMenu> {
+        let menu = NSMenu::initWithTitle(NSMenu::alloc(mtm), &NSString::from_str(title));
+        let top = NSMenuItem::new(mtm);
+        top.setSubmenu(Some(&menu));
+        bar.addItem(&top);
+        menu
+    }
+    let browser_command = |menu: &NSMenu, title: &str, key: &str, command| {
+        let entry = item(mtm, title, key, sel!(performBrowserCommand:));
+        entry.setTag(command as isize);
+        // SAFETY: the delegate is retained until the CEF message loop exits.
+        unsafe {
+            entry.setTarget(Some(delegate));
+        }
+        menu.addItem(&entry);
+    };
+
+    let bar = NSMenu::new(mtm);
+    let application = submenu(&bar, "Sisu Preview", mtm);
+    for (title, key, action) in [
+        (
+            "About Sisu Preview",
+            "",
+            sel!(orderFrontStandardAboutPanel:),
+        ),
+        ("Hide Sisu Preview", "h", sel!(hide:)),
+        ("Show All", "", sel!(unhideAllApplications:)),
+        ("Quit Sisu Preview", "q", sel!(terminate:)),
+    ] {
+        let command = item(mtm, title, key, action);
+        // SAFETY: NSApplication lives for the complete menu lifetime.
+        unsafe {
+            command.setTarget(Some(app));
+        }
+        application.addItem(&command);
+    }
+    browser_command(&application, "Settings…", ",", sys::IDC_OPTIONS);
+    let file = submenu(&bar, "File", mtm);
+    browser_command(&file, "New Tab", "t", sys::IDC_NEW_TAB);
+    browser_command(&file, "New Window", "n", sys::IDC_NEW_WINDOW);
+    browser_command(&file, "Close Tab", "w", sys::IDC_CLOSE_TAB);
+    let edit = submenu(&bar, "Edit", mtm);
+    for (title, key, action) in [
+        ("Undo", "z", sel!(undo:)),
+        ("Redo", "Z", sel!(redo:)),
+        ("Cut", "x", sel!(cut:)),
+        ("Copy", "c", sel!(copy:)),
+        ("Paste", "v", sel!(paste:)),
+        ("Select All", "a", sel!(selectAll:)),
+    ] {
+        edit.addItem(&item(mtm, title, key, action));
+    }
+    browser_command(&edit, "Find…", "f", sys::IDC_FIND);
+    let view = submenu(&bar, "View", mtm);
+    browser_command(&view, "Open Location…", "l", sys::IDC_FOCUS_LOCATION);
+    browser_command(&view, "Reload", "r", sys::IDC_RELOAD);
+    browser_command(&view, "Actual Size", "0", sys::IDC_ZOOM_NORMAL);
+    browser_command(&view, "Zoom In", "+", sys::IDC_ZOOM_PLUS);
+    browser_command(&view, "Zoom Out", "-", sys::IDC_ZOOM_MINUS);
+    let window = submenu(&bar, "Window", mtm);
+    window.addItem(&item(mtm, "Minimize", "m", sel!(performMiniaturize:)));
+    window.addItem(&item(mtm, "Zoom", "", sel!(performZoom:)));
+    app.setWindowsMenu(Some(&window));
+    app.setMainMenu(Some(&bar));
+}
+
+fn focused_host() -> Option<BrowserHost> {
+    let mtm = MainThreadMarker::new()?;
+    let key = NSApp(mtm).keyWindow()?;
+    // Release the RefCell borrow before crossing into CEF/Cocoa callbacks.
+    let browsers = BROWSERS.with_borrow(|bs| bs.values().cloned().collect::<Vec<_>>());
+    browsers.into_iter().find_map(|browser| {
+        let host = browser.host()?;
+        // CEF's macOS window handle is an NSView owned by the live browser.
+        // This runs on the UI thread; OnBeforeClose removes dead browsers.
+        let view = unsafe { host.window_handle().cast::<NSView>().as_ref()? };
+        let window = view.window()?;
+        std::ptr::eq(&*window, &*key).then_some(host)
+    })
 }

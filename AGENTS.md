@@ -1,5 +1,9 @@
 # Working on Sisu
 
+## 17 November 2026 update
+
+Version 0.1.0-alpha.1 is an engineering alpha. Read [docs/macos-alpha.md](docs/macos-alpha.md) for the native Mac results and remaining gates. The user now prioritizes lowest practical Mac memory with WebKit extension limits and authorizes different engines/native shells for Mac and Windows. This supersedes older statements below that an engine investigation has no authorization. WebKit/AppKit is the next Mac candidate, with shared Rust policy where useful; keep CEF and its profiles for comparison. Do not claim the candidate is accepted or lighter until native workflows and full-process measurements pass. Windows and Linux remain independently gated.
+
 Read this file first, followed by docs/checkpoint.md, docs/architecture.md and docs/plan-alignment.md. The project name is Sisu and the repository is https://github.com/gurusciuc/sisu. The current package, executable and profile identifiers still use the original Desktop Browser working name. Original code uses Apache-2.0. Preserve NOTICE and third-party licenses.
 
 ## Product intent

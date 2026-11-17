@@ -1,5 +1,7 @@
 # Foundation reassessment after local feedback
 
+**17 November 2026 decision update:** The user observed Safari using less memory than the Mac CEF preview and selected lowest practical Mac memory with WebKit extension limits. Mac and Windows may use different native shells and engines. A WebKit/AppKit candidate with shared Rust policy is authorized for Mac; Windows keeps its existing baseline pending its own evidence. Preserve CEF profiles and compare matched, successful active workloads before claiming gains. See [the Mac alpha checkpoint](macos-alpha.md). The user observation is not yet a recorded matched benchmark.
+
 The user's Windows Task Manager screenshot showed CEF Bootstrap Application at 1,109.6 MB and Google Chrome at 1,127.5 MB. CEF showed higher instantaneous CPU usage. That is about a 1.6% memory difference in the displayed numbers. The screenshot does not establish matched profiles, page state, extensions, viewport, memory-saver policy or measurement timing. It supports the user's practical observation that the current preview offers little evident memory advantage while missing many everyday-browser features.
 
 The small release fixture baseline measures a different workload. It cannot establish a benefit over the user's normal Chrome session. Product decisions must give full functionality and comparable active content the same weight as private working set, private commit, CPU and latency.

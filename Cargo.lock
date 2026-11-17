@@ -439,7 +439,7 @@ dependencies = [
 
 [[package]]
 name = "desktop-browser"
-version = "0.1.0"
+version = "0.1.0-alpha.1"
 dependencies = [
  "adblock",
  "cc",
@@ -450,6 +450,7 @@ dependencies = [
  "objc2",
  "objc2-app-kit",
  "objc2-foundation",
+ "plist",
  "serde",
  "serde_json",
  "sha2",

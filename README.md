@@ -50,7 +50,19 @@ The runtime can also start with `--reference-ui` for CEF’s native Chrome-style
 
 ## Linux and macOS engineering builds
 
-The [check workflow](.github/workflows/check.yml) specifies runner dependencies and separate Linux X11, Linux Wayland and macOS jobs. From the repository root run `cargo build --locked --release --features packaging --bins`, followed by `cargo run --locked --release --features packaging --bin stage-posix -- target/release dist/platform`. Linux uses the staged `browser-shell` with its runtime libraries. macOS uses the staged application bundle and helper processes. Native acceptance on these hosts is pending.
+The [check workflow](.github/workflows/check.yml) specifies runner dependencies and separate Linux X11, Linux Wayland and macOS jobs. For Linux, run `cargo build --locked --release --features packaging --bins`, followed by `cargo run --locked --release --features packaging --bin stage-posix -- target/release dist/linux`. Linux native acceptance is pending.
+
+For a local macOS preview, install the pinned Rust toolchain, Apple's Command Line Tools, CMake and Ninja, then run:
+
+```sh
+./tools/build-macos.sh dist/mac
+ditto -x -k dist/mac/Sisu-Preview-macos.zip /Applications
+open '/Applications/Sisu Preview.app'
+```
+
+The archive targets the Mac used to build it; it is not universal. The script includes the complete CEF framework, sandbox helpers and license notices, verifies local ad-hoc signatures and archives the app from temporary storage. This avoids signing failures when a Documents file provider attaches Finder metadata to app bundles. Full Xcode and `ibtool` are not required. Choose a fresh output directory for subsequent builds.
+
+**This is CEF's Chromium reference interface with Sisu's Rust core and filtering. The custom Windows shell, its Settings page, top/left layout and import UI have not been ported to macOS.** Ad-hoc signing is for local testing, with no Developer ID signing or notarization. It is not a production release. Keep the native runtime and extension gates in [the checkpoint](docs/checkpoint.md) open until their specific workflows have passed.
 
 ## Project
 

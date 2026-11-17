@@ -73,7 +73,7 @@ jobs:
         with:
           node-version: '22'
       - run: |
-          cargo test --locked --release --no-default-features --test policy --test import --test cookies
-          cargo build --locked --release --features packaging --bins
-          cargo run --locked --release --features packaging --bin stage-posix -- target/release dist/mac
-          node tools/posix-smoke.mjs dist/mac/browser-shell.app/Contents/MacOS/browser-shell
+          brew install cmake ninja
+          ./tools/build-macos.sh dist/mac
+          ditto -x -k dist/mac/Sisu-Preview-macos.zip "$RUNNER_TEMP/sisu-preview"
+          node tools/posix-smoke.mjs "$RUNNER_TEMP/sisu-preview/Sisu Preview.app/Contents/MacOS/browser-shell"

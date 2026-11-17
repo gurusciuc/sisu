@@ -1,5 +1,7 @@
 # Windows feasibility checkpoint · 16 November 2026
 
+**17 November update:** [0.1.0-alpha.1 macOS checkpoint](macos-alpha.md) adds a built Apple Silicon CEF preview, Command-Q and profile-root fixes, actual restart evidence, and the user's new platform-specific foundation direction. Existing Windows evidence and open defects below are preserved.
+
 ## End-of-session source checkpoint
 
 The user requested pushing current progress and leaving a prompt for tomorrow. [Continuation prompt and precise state](continue-tomorrow.md) supersedes older feature descriptions below where they differ. The latest source adds monochrome light/dark palettes, broader settings, middle-click close routing, menu rounding and a JSON cookie import path. These features remain partly unverified. Six release Rust tests, the release library build, real Settings/bookmark/private flow and foreground tab-paint checks pass. The caption hover handoff regression still fails. Cookie migration, theme switching, middle-click semantics and the new engine-setting destinations need runtime acceptance. The generated logo is a draft. No installer or production release was created, and the user's main local preview has not been replaced with this candidate.

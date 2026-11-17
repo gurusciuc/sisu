@@ -1,6 +1,6 @@
 [package]
 name = "desktop-browser"
-version = "0.1.0"
+version = "0.1.0-alpha.1"
 edition = "2024"
 license = "Apache-2.0"
 publish = false
@@ -11,7 +11,7 @@ crate-type = ["rlib", "cdylib"]
 
 [features]
 default = ["desktop"]
-packaging = ["desktop", "cef/build-util"]
+packaging = ["desktop", "cef/build-util", "dep:plist"]
 desktop = ["dep:cef", "dep:directories", "dep:dunce", "dep:tempfile"]
 
 [dependencies]
@@ -36,7 +36,8 @@ strip = "debuginfo"
 [target.'cfg(target_os = "macos")'.dependencies]
 objc2 = "0.6.3"
 objc2-foundation = "0.3.2"
-objc2-app-kit = { version = "0.3.2", default-features = false, features = ["NSApplication","NSEvent","NSResponder","NSUserInterfaceValidation","NSView","NSWindow"] }
+objc2-app-kit = { version = "0.3.2", default-features = false, features = ["NSApplication","NSEvent","NSMenu","NSMenuItem","NSResponder","NSUserInterfaceValidation","NSView","NSWindow"] }
+plist = { version = "1", optional = true }
 
 [package.metadata.cef.bundle]
 helper_name = "browser-helper"

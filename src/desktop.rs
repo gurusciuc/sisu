@@ -97,6 +97,10 @@ impl Session {
                 })
             });
         std::fs::create_dir_all(&home).map_err(|e| e.to_string())?;
+        // CEF canonicalizes cache_path before comparing it to root_cache_path.
+        // Keep both in the same form (notably /var -> /private/var on macOS),
+        // otherwise an ordinary profile silently falls back to memory storage.
+        let home = dunce::canonicalize(&home).map_err(|e| e.to_string())?;
         let filter = if extension.is_some() {
             None
         } else {
