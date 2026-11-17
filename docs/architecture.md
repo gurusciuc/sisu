@@ -1,5 +1,8 @@
 # ADR 001 · Browser engine and shell
 
+**Platform split, 17 November 2026:** This repository now maintains Sisu for Windows (0.1.0-alpha.1). Native macOS development lives in https://github.com/gurusciuc/sisu-macos with AppKit/WebKit and Rust policy. Preserve Windows evidence and keep its extension, memory and hover gates open. Mac results do not establish Windows acceptance. Earlier multi-platform/CEF Mac notes below are historical context.
+
+
 **Decision, 16 November 2026.** Use CEF Chrome runtime with the cef Rust bindings for the feasibility build. Keep the production engine decision open until extension actions, permission prompts and tab identity pass user workflows in the custom window. Use one engine per running session.
 
 ## Evidence and alternatives

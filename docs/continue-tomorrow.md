@@ -1,5 +1,8 @@
 # Resume Sisu development
 
+**Platform split, 17 November 2026:** This repository now maintains Sisu for Windows (0.1.0-alpha.1). Native macOS development lives in https://github.com/gurusciuc/sisu-macos with AppKit/WebKit and Rust policy. Preserve Windows evidence and keep its extension, memory and hover gates open. Mac results do not establish Windows acceptance. Earlier multi-platform/CEF Mac notes below are historical context.
+
+
 Paste the following into an agent working in this repository.
 
 ---

@@ -1,5 +1,8 @@
 # Working on Sisu
 
+**Platform split, 17 November 2026:** This repository now maintains Sisu for Windows (0.1.0-alpha.1). Native macOS development lives in https://github.com/gurusciuc/sisu-macos with AppKit/WebKit and Rust policy. Preserve Windows evidence and keep its extension, memory and hover gates open. Mac results do not establish Windows acceptance. Earlier multi-platform/CEF Mac notes below are historical context.
+
+
 ## 17 November 2026 update
 
 Version 0.1.0-alpha.1 is an engineering alpha. Read [docs/macos-alpha.md](docs/macos-alpha.md) for the native Mac results and remaining gates. The user now prioritizes lowest practical Mac memory with WebKit extension limits and authorizes different engines/native shells for Mac and Windows. This supersedes older statements below that an engine investigation has no authorization. WebKit/AppKit is the next Mac candidate, with shared Rust policy where useful; keep CEF and its profiles for comparison. Do not claim the candidate is accepted or lighter until native workflows and full-process measurements pass. Windows and Linux remain independently gated.

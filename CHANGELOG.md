@@ -2,7 +2,7 @@
 
 ## 0.1.0-alpha.1 · 17 November 2026
 
-This is an engineering alpha checkpoint, not a production browser release.
+This is an engineering alpha checkpoint, not a production browser release. The existing repository now focuses on Windows. Native Mac development is maintained independently at https://github.com/gurusciuc/sisu-macos. No Windows runtime revalidation was performed on the Mac host during this repository split.
 
 - Build and stage the macOS CEF reference preview using Command Line Tools, Rust, CMake and Ninja. Full Xcode/ibtool is no longer required.
 - Create native Cocoa menus, route browser commands to the focused window and handle Command-Q through Sisu's application event path.

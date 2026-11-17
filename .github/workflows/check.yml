@@ -1,4 +1,4 @@
-name: Prototype checks
+name: Windows alpha checks
 on: [push, pull_request, workflow_dispatch]
 permissions:
   contents: read
@@ -33,47 +33,3 @@ jobs:
         with:
           name: windows-workflow-evidence
           path: dist/results
-  linux:
-    runs-on: ubuntu-24.04
-    strategy:
-      fail-fast: false
-      matrix:
-        display: [x11, wayland]
-    steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
-        with:
-          node-version: '22'
-      - run: sudo apt-get update && sudo apt-get install -y ninja-build xvfb xauth weston libgtk-3-0t64 libnss3 libgbm1 libxss1 libasound2t64 libatk-bridge2.0-0t64
-      - run: |
-          cargo test --locked --release --no-default-features --test policy --test import --test cookies
-          cargo build --locked --release --features packaging --bins
-          cargo run --locked --release --features packaging --bin stage-posix -- target/release dist/linux
-      - name: Exercise a real window with sandbox enabled
-        env:
-          XDG_SESSION_TYPE: ${{ matrix.display }}
-        run: |
-          export LD_LIBRARY_PATH="$PWD/dist/linux"
-          if [ "$XDG_SESSION_TYPE" = x11 ]; then
-            xvfb-run -a node tools/posix-smoke.mjs dist/linux/browser-shell
-          else
-            export XDG_RUNTIME_DIR="$(mktemp -d)"
-            export WAYLAND_DISPLAY=wayland-test
-            weston --backend=headless-backend.so --socket="$WAYLAND_DISPLAY" --idle-time=0 >"$RUNNER_TEMP/weston.log" 2>&1 &
-            compositor=$!
-            trap 'kill "$compositor" || true' EXIT
-            for i in $(seq 1 50); do [ -S "$XDG_RUNTIME_DIR/$WAYLAND_DISPLAY" ] && break; sleep .1; done
-            node tools/posix-smoke.mjs dist/linux/browser-shell
-          fi
-  macos:
-    runs-on: macos-15
-    steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
-        with:
-          node-version: '22'
-      - run: |
-          brew install cmake ninja
-          ./tools/build-macos.sh dist/mac
-          ditto -x -k dist/mac/Sisu-Preview-macos.zip "$RUNNER_TEMP/sisu-preview"
-          node tools/posix-smoke.mjs "$RUNNER_TEMP/sisu-preview/Sisu Preview.app/Contents/MacOS/browser-shell"

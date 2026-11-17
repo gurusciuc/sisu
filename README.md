@@ -1,6 +1,8 @@
-# Sisu
+# Sisu for Windows
 
-An open-source desktop browser prototype with a Rust core, the Chromium Embedded Framework (CEF) and native Windows controls. The working Windows preview has real web navigation, live top or left tabs, profile settings, bookmarks and native ad and tracker filtering. Linux and macOS have build definitions and an engine reference shell. Start with the [milestone report](docs/checkpoint.md) for tested features and open release gates.
+**0.1.0-alpha.1 — an engineering alpha, not a production release.** This repository maintains the Windows implementation: a Rust core, native Win32 controls and the current CEF/Chromium feasibility foundation. It provides real navigation, top/left live tabs, profile settings, bookmarks and native filtering. Extension topology, the caption-hover regression, matched memory savings and distribution signing remain open gates. See [the checkpoint](docs/checkpoint.md).
+
+The native Mac version lives in [gurusciuc/sisu-macos](https://github.com/gurusciuc/sisu-macos). Different platforms may use different engines and native interfaces.
 
 ## Run on Windows x64
 
@@ -34,7 +36,7 @@ Restart can reopen the last ordinary web page. Multi-tab session restoration, pa
 ## Checks
 
 ```powershell
-cargo test --release --locked --no-default-features --test policy --test import
+cargo test --release --locked --no-default-features --test policy --test import --test cookies
 ./tools/fetch-ubol.ps1 -Directory C:/db-ubol
 node tools/smoke.mjs exe=dist/preview/desktop_browser.exe out=dist/results ubol=C:/db-ubol/unpacked
 ./tools/settings-check.ps1 -Exe "$PWD/dist/preview/desktop_browser.exe" -Out "$PWD/dist/results"
@@ -48,21 +50,9 @@ node tools/benchmark.mjs dist/preview/desktop_browser.exe dist/results
 
 The runtime can also start with `--reference-ui` for CEF’s native Chrome-style window. The explicitly enabled `--extension-lab=<unpacked-directory>` uses a separate profile, loads one package and turns off native filtering for attribution. Keep the proof-of-concept extension package outside the ordinary profile.
 
-## Linux and macOS engineering builds
+## macOS version
 
-The [check workflow](.github/workflows/check.yml) specifies runner dependencies and separate Linux X11, Linux Wayland and macOS jobs. For Linux, run `cargo build --locked --release --features packaging --bins`, followed by `cargo run --locked --release --features packaging --bin stage-posix -- target/release dist/linux`. Linux native acceptance is pending.
-
-For a local macOS preview, install the pinned Rust toolchain, Apple's Command Line Tools, CMake and Ninja, then run:
-
-```sh
-./tools/build-macos.sh dist/mac
-ditto -x -k dist/mac/Sisu-Preview-macos.zip /Applications
-open '/Applications/Sisu Preview.app'
-```
-
-The archive targets the Mac used to build it; it is not universal. The script includes the complete CEF framework, sandbox helpers and license notices, verifies local ad-hoc signatures and archives the app from temporary storage. This avoids signing failures when a Documents file provider attaches Finder metadata to app bundles. Full Xcode and `ibtool` are not required. Choose a fresh output directory for subsequent builds.
-
-**This is CEF's Chromium reference interface with Sisu's Rust core and filtering. The custom Windows shell, its Settings page, top/left layout and import UI have not been ported to macOS.** Ad-hoc signing is for local testing, with no Developer ID signing or notarization. It is not a production release. Keep the native runtime and extension gates in [the checkpoint](docs/checkpoint.md) open until their specific workflows have passed.
+The independent native Mac implementation is maintained in [gurusciuc/sisu-macos](https://github.com/gurusciuc/sisu-macos). It uses AppKit, system WebKit and Rust policy. Mac and Windows have separate engines, installers, runtime evidence and release gates. The earlier CEF Mac reference work remains in history and [the Mac alpha notes](docs/macos-alpha.md).
 
 ## Project
 

@@ -1,5 +1,8 @@
 # Windows feasibility checkpoint · 16 November 2026
 
+**Platform split, 17 November 2026:** This repository now maintains Sisu for Windows (0.1.0-alpha.1). Native macOS development lives in https://github.com/gurusciuc/sisu-macos with AppKit/WebKit and Rust policy. Preserve Windows evidence and keep its extension, memory and hover gates open. Mac results do not establish Windows acceptance. Earlier multi-platform/CEF Mac notes below are historical context.
+
+
 **17 November update:** [0.1.0-alpha.1 macOS checkpoint](macos-alpha.md) adds a built Apple Silicon CEF preview, Command-Q and profile-root fixes, actual restart evidence, and the user's new platform-specific foundation direction. Existing Windows evidence and open defects below are preserved.
 
 ## End-of-session source checkpoint
